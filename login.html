@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Login · ATEC Palmela · #TodosOsPassosContam</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="hd"><div class="brand"><a class="logo" href="index.html" aria-label="ATEC Palmela"><span class="lg-atec" role="img" aria-label="ATEC Palmela"></span></a><span class="pt"><span class="lg-galp" role="img" aria-label="Fundação Galp"></span></span></div><nav><a href="desafio.html">Desafio</a><a href="como-funciona.html">Como funciona</a><a href="classificacao.html">Classificação</a><a href="destaques.html">Destaques</a></nav><a class="btn b1" href="login.html" aria-current="page">Login</a><div id="bar"></div></header>
+<div id="blob"><b></b><span></span></div>
+
+<main>
+<section class="pg auth" id="auth">
+  <div class="auth-card">
+    <form id="f-login" class="af" novalidate>
+      <h1>Bem-vindo de volta.</h1>
+      <p class="hint">Entra para submeter os km da tua turma.</p>
+      <label>Email<input type="email" name="email" autocomplete="email" placeholder="nome@exemplo.pt" required></label>
+      <label>Palavra-passe<input type="password" name="password" autocomplete="current-password" placeholder="••••••••" required></label>
+      <p class="msg" role="alert" aria-live="polite"></p>
+      <button class="btn b1" type="submit">Entrar</button>
+      <p class="sw">Ainda não tens conta? <a href="#signup" data-go="signup">Criar conta</a></p>
+    </form>
+
+    <form id="f-signup" class="af" novalidate hidden>
+      <h1>Junta-te à equipa.</h1>
+      <p class="hint">Cria a tua conta em menos de um minuto.</p>
+      <label>Nome<input type="text" name="name" autocomplete="name" placeholder="O teu nome" required></label>
+      <label>Turma<input type="text" name="class" placeholder="Ex.: Turma A" required></label>
+      <label>Email<input type="email" name="email" autocomplete="email" placeholder="nome@exemplo.pt" required></label>
+      <label>Palavra-passe<input type="password" name="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" minlength="8" required></label>
+      <p class="msg" role="alert" aria-live="polite"></p>
+      <button class="btn b1" type="submit">Criar conta</button>
+      <p class="sw">Já tens conta? <a href="#login" data-go="login">Fazer login</a></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="mq"><div>ATEC Palmela · Todos os passos contam ·</div><div>ATEC Palmela · Todos os passos contam ·</div></div>
+  <small>Porque na ATEC Palmela acreditamos que o futuro se constrói com competência técnica, espírito de equipa e muita solidariedade. Iniciativa #TodosOsPassosContam, promovida pela Fundação Galp.</small>
+</footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
