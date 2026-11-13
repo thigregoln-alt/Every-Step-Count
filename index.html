@@ -5,113 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ATEC Palmela · #TodosOsPassosContam</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#F6F7F3;--ink:#13201B;--forest:#1F3D32;--sage:#BFD2BB;--sand:#E2D8C3;--mist:#CFDDE0;--amber:#EBC98A;--m:clamp(18px,4vw,56px);--f:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-*,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:84px}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 clamp(17px,1.2vw,19px)/1.55 var(--f);overflow-x:hidden}
-h1,h2,h3,p{margin:0}
-h1,h2{font-weight:800;letter-spacing:-.045em;line-height:.95}
-h1{font-size:clamp(3rem,7.2vw,7.4rem)}
-h2{font-size:clamp(2.2rem,5.4vw,5.4rem)}
-a{color:inherit}
-section{position:relative;padding:clamp(80px,11vw,170px) var(--m)}
-section>*{position:relative;z-index:2}
-.rv{opacity:0;transform:translateY(34px);transition:opacity .9s,transform .9s cubic-bezier(.2,.8,.2,1)}
-.rv.in{opacity:1;transform:none}
-.btn{display:inline-block;padding:.85em 1.6em;border-radius:999px;font-weight:600;text-decoration:none;transition:transform .3s}
-.btn:hover{transform:translateY(-3px)}
-.b1{background:var(--forest);color:#F6F7F3}.b2{background:transparent;color:var(--ink)}
-
-/* nav */
-header{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:50;display:flex;align-items:center;gap:28px;padding:16px var(--m);background:var(--bg);transition:box-shadow .3s}
-header.sc{box-shadow:0 8px 30px -18px rgba(19,32,27,.4)}
-.logo{font-weight:800;letter-spacing:-.03em;text-decoration:none;margin-right:auto;display:flex;align-items:center;gap:10px}
-.logo i{width:20px;height:20px;border-radius:50%;background:var(--amber);transition:border-radius .5s,transform .5s}
-.logo:hover i{border-radius:5px;transform:rotate(90deg)}
-header nav{display:flex;gap:28px}
-header nav a{text-decoration:none;font-size:.95rem;opacity:.75;transition:opacity .2s}
-header nav a:hover{opacity:1}
-header .btn{padding:.6em 1.3em;font-size:.95rem}
-#bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--amber);transform:scaleX(0);transform-origin:0 0}
-@media(max-width:760px){header nav{display:none}}
-
-/* hero */
-.hero{min-height:100svh;display:grid;grid-template-columns:1.05fr 1fr;align-items:center;gap:clamp(24px,5vw,80px);padding-top:120px;overflow:hidden}
-.tag{display:inline-block;background:#fff;border-radius:999px;padding:.4em 1em;font-weight:600;font-size:.9rem;margin-bottom:24px}
-.ln{display:block;overflow:hidden;padding-bottom:.08em}
-.ln>span{display:block;transform:translateY(110%);animation:up 1s cubic-bezier(.2,.8,.2,1) forwards}
-.ln:nth-child(2)>span{animation-delay:.12s}
-@keyframes up{to{transform:none}}
-.hero p.sub{margin-top:28px;max-width:36ch;font-size:clamp(1.1rem,1.5vw,1.35rem);line-height:1.4}
-.acts{margin-top:32px;display:flex;gap:12px;flex-wrap:wrap}
-.vis{position:relative;height:min(64vh,580px)}
-.mesh b{position:absolute;border-radius:50%;filter:blur(70px);opacity:.9;animation:dr 12s ease-in-out infinite alternate}
-.mesh b:nth-child(1){width:55%;height:55%;left:-5%;top:10%;background:var(--sage)}
-.mesh b:nth-child(2){width:50%;height:50%;right:0;top:-5%;background:var(--amber);animation-delay:-4s}
-.mesh b:nth-child(3){width:50%;height:50%;right:15%;bottom:-10%;background:var(--mist);animation-delay:-8s}
-@keyframes dr{to{transform:translate(8%,10%) scale(1.15)}}
-.fc{position:absolute;background:#fff;border-radius:24px;padding:22px;box-shadow:0 30px 60px -24px rgba(19,32,27,.3);animation:fl 7s ease-in-out infinite alternate}
-@keyframes fl{to{transform:translateY(-14px)}}
-.fa{left:0;top:12%;width:68%}
-.fb{right:0;bottom:2%;width:52%;animation-delay:-3s}
-.fc h3{font-size:1.05rem;font-weight:600;letter-spacing:-.01em;display:flex;justify-content:space-between}
-.fc h3 small{font-weight:400;opacity:.55;font-size:.8rem}
-.rk{display:grid;grid-template-columns:64px 1fr 52px;gap:10px;align-items:center;font-size:.85rem;margin-top:14px}
-.rk i{display:block;height:10px;border-radius:99px;background:var(--forest);width:0;transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
-.rk:nth-child(3) i{background:#4F7A66}.rk:nth-child(4) i{background:#7FA891}.rk:nth-child(5) i{background:var(--sage)}
-.fb b{display:block;font-size:2.4rem;letter-spacing:-.04em;line-height:1;margin-top:10px}
-.fb span{font-size:.85rem;opacity:.6}
-.hero .slot{position:absolute;right:2%;top:0;width:26%;aspect-ratio:1}
-@media(max-width:900px){.hero{grid-template-columns:1fr}.vis{height:440px}}
-
-/* blob */
-#blob{position:fixed;left:0;top:0;z-index:1;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#13201B;overflow:hidden}
-#blob b{font-weight:800;letter-spacing:-.06em;line-height:.85;white-space:nowrap}
-#blob span{font-weight:600;line-height:1.1;margin-top:.6em;max-width:80%}
-.slot{visibility:hidden}
-
-/* seccoes */
-.des .slot{height:clamp(110px,20vw,280px);margin-block:clamp(36px,6vw,90px)}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,6vw,96px)}
-.cols p{font-size:clamp(1.1rem,1.5vw,1.4rem);max-width:42ch}
-.top{display:flex;justify-content:space-between;align-items:end;gap:32px;margin-bottom:clamp(40px,6vw,80px)}
-.top .slot{width:clamp(150px,20vw,280px);aspect-ratio:5/6}
-.t2 .slot{aspect-ratio:1}
-.stack .card{position:sticky;min-height:60vh;border-radius:clamp(20px,3vw,40px);padding:clamp(24px,4vw,56px);display:flex;flex-direction:column;justify-content:space-between;margin-bottom:22vh;transform-origin:50% 0}
-.card:nth-child(1){top:96px;background:var(--sage)}.card:nth-child(2){top:124px;background:var(--mist)}.card:nth-child(3){top:152px;background:var(--sand)}
-.card h3{font-size:clamp(2rem,5vw,5rem);font-weight:800;letter-spacing:-.04em;line-height:.95;max-width:12ch}
-.card p{max-width:40ch;font-weight:600;font-size:clamp(1.05rem,1.4vw,1.3rem);line-height:1.3}
-.row{display:grid;grid-template-columns:1.2fr 1.4fr auto;gap:24px;align-items:center;padding:clamp(22px,3vw,38px) var(--m);margin-inline:calc(var(--m)*-1);background:#ECEEE7;text-decoration:none;margin-bottom:8px;transition:background .3s,color .3s,padding .3s}
-.row:hover{background:var(--forest);color:#F6F7F3;padding-left:calc(var(--m) + 22px)}
-.row h3{font-size:clamp(1.5rem,3vw,2.8rem);font-weight:800;letter-spacing:-.03em;line-height:1}
-.row span{font-weight:600}
-.dg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:clamp(40px,6vw,80px)}
-.dc{border-radius:clamp(20px,3vw,36px);padding:clamp(24px,3vw,44px);min-height:260px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .4s}
-.dc:hover{transform:translateY(-8px) rotate(-.6deg)}
-.dc h3{font-size:clamp(1.8rem,3.6vw,3.4rem);font-weight:800;letter-spacing:-.035em;line-height:.98}
-.dc p{font-weight:600;max-width:34ch;line-height:1.3}
-footer{background:var(--forest);color:#F6F7F3;padding:clamp(70px,10vw,140px) var(--m) 28px;overflow:hidden;position:relative;z-index:2}
-.fr{display:flex;justify-content:space-between;align-items:end;gap:32px;flex-wrap:wrap}
-.fr .slot{width:clamp(110px,16vw,220px);aspect-ratio:1}
-.mq{display:flex;white-space:nowrap;margin-top:clamp(40px,7vw,90px);font-weight:800;letter-spacing:-.04em;font-size:clamp(3rem,9vw,9rem);line-height:.95;opacity:.2}
-.mq div{animation:mq 24s linear infinite;padding-right:.4em}
-@keyframes mq{to{transform:translateX(-100%)}}
-footer small{display:block;margin-top:28px;max-width:70ch;opacity:.75}
-@media(max-width:860px){.cols,.dg,.row{grid-template-columns:1fr}.top{flex-direction:column;align-items:start}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.rv{opacity:1;transform:none}.ln>span{animation:none;transform:none}.fc,.mesh b,.mq div{animation:none}}
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header id="hd"><a class="logo" href="#topo"><i></i>ATEC Palmela</a><nav><a href="#desafio">Desafio</a><a href="#como">Como funciona</a><a href="#tabela">Classificação</a><a href="#destaques">Destaques</a></nav><a class="btn b1" href="#tabela">Submeter km</a><div id="bar"></div></header>
+<header id="hd"><div class="brand"><a class="logo" href="index.html" aria-label="ATEC Palmela"><span class="lg-atec" role="img" aria-label="ATEC Palmela"></span></a><span class="pt"><span class="lg-galp" role="img" aria-label="Fundação Galp"></span></span></div><nav><a href="desafio.html">Desafio</a><a href="como-funciona.html">Como funciona</a><a href="classificacao.html">Classificação</a><a href="destaques.html">Destaques</a></nav><a class="btn b1" href="classificacao.html">Submeter km</a><div id="bar"></div></header>
 <div id="blob"><b></b><span></span></div>
 
+<main>
 <section class="hero" id="topo">
   <div>
     <span class="tag">16 a 22 de novembro · Palmela</span>
     <h1><span class="ln"><span>Todos os passos</span></span><span class="ln"><span>contam.</span></span></h1>
     <p class="sub">Uma semana de energia solidária: cada quilómetro dos formandos da ATEC Palmela vira refeições para quem mais precisa.</p>
-    <div class="acts"><a class="btn b1" href="#como">Como participar</a><a class="btn b2" href="#tabela">Ver classificação →</a></div>
+    <div class="acts"><a class="btn b1" href="como-funciona.html">Como participar</a><a class="btn b2" href="classificacao.html">Ver classificação →</a></div>
   </div>
   <div class="vis">
     <div class="mesh"><b></b><b></b><b></b></div>
@@ -124,38 +30,7 @@ footer small{display:block;margin-top:28px;max-width:70ch;opacity:.75}
     <div class="slot" id="cd" data-c="#EBC98A" data-r="999" data-b="3" data-s="dias para o primeiro passo"></div>
   </div>
 </section>
-
-<section class="des" id="desafio">
-  <h2 class="rv">Passos que viram refeições.</h2>
-  <div class="slot" data-c="#E2D8C3" data-r="999" data-b="1,5M" data-s="refeições para a Rede de Emergência Alimentar"></div>
-  <div class="cols"><p class="rv">Estamos na reta final da iniciativa #TodosOsPassosContam, da Fundação Galp. A meta nacional: doar 1,5 milhões de refeições.</p><p class="rv">Mostramos que a formação técnica e a responsabilidade social caminham lado a lado. Cada turma é uma equipa e todos os quilómetros contam para o mesmo total.</p></div>
-</section>
-
-<section id="como">
-  <div class="top"><h2 class="rv">Como participar.</h2><div class="slot" data-c="#FFFFFF" data-r="42" data-b="StepUp" data-s="um grupo por turma"></div></div>
-  <div class="stack">
-    <div class="card"><h3>Um grupo por turma no StepUp</h3><p>Cada turma cria o seu grupo na app para acompanhar os passos de todos, entre as aulas e nos tempos livres.</p></div>
-    <div class="card"><h3>O delegado submete no fim do dia</h3><p>Soma o total do grupo, converte passos em quilómetros e submete aqui o resultado com o print.</p></div>
-    <div class="card"><h3>Uma só equipa por Palmela</h3><p>Os dados de todos os delegados alimentam o contador geral, em tempo real.</p></div>
-  </div>
-</section>
-
-<section id="tabela" class="t2">
-  <div class="top"><h2 class="rv">Quem lidera a tabela?</h2><div class="slot" data-c="#CFDDE0" data-r="18" data-b="0 km" data-s="total acumulado pela ATEC Palmela"></div></div>
-  <a class="row rv" href="#tabela"><h3>Ranking de turmas</h3><p>Que equipa soma mais passos.</p><span>Abre a 16 de novembro</span></a>
-  <a class="row rv" href="#tabela"><h3>Ranking de formandos</h3><p>Quem deu mais passos em toda a ATEC.</p><span>Abre a 16 de novembro</span></a>
-  <a class="row rv" href="#tabela"><h3>Dentro da equipa</h3><p>Em cada turma, quem andou mais.</p><span>Abre a 16 de novembro</span></a>
-</section>
-
-<section id="destaques">
-  <h2 class="rv">Destaques do dia.</h2>
-  <div class="dg">
-    <div class="dc rv" style="background:var(--sage)"><h3>Turma Campeã do Dia</h3><p>A turma com mais quilómetros acumulados no dia anterior.</p></div>
-    <div class="dc rv" style="background:var(--amber)"><h3>Turma Revelação</h3><p>A maior subida face ao seu próprio registo do dia anterior.</p></div>
-    <div class="dc rv" style="background:var(--mist)"><h3>Passada de Ouro</h3><p>O formando ou formanda com mais passos num só dia, com base nos prints.</p></div>
-    <div class="dc rv" style="background:var(--sand)"><h3>Espírito de Equipa</h3><p>Turmas em que todos os elementos do grupo registaram atividade.</p></div>
-  </div>
-</section>
+</main>
 
 <footer>
   <div class="fr"><h2 style="max-width:12ch">Vamos dar o nosso melhor passo.</h2><div class="slot" data-c="#BFD2BB" data-r="999" data-b="Bora!" data-s="16 a 22 de novembro"></div></div>
@@ -163,46 +38,6 @@ footer small{display:block;margin-top:28px;max-width:70ch;opacity:.75}
   <small>Porque na ATEC Palmela acreditamos que o futuro se constrói com competência técnica, espírito de equipa e muita solidariedade. Iniciativa #TodosOsPassosContam, promovida pela Fundação Galp.</small>
 </footer>
 
-<script>
-(function(){
-var rm=matchMedia("(prefers-reduced-motion:reduce)").matches,$=function(s){return [].slice.call(document.querySelectorAll(s))};
-var s0=new Date(2026,10,16),e0=new Date(2026,10,23),n=new Date(),D=864e5,cd=document.getElementById("cd");
-if(n<s0){var d=Math.ceil((s0-n)/D);cd.dataset.b=d;cd.dataset.s=(d===1?"dia":"dias")+" para o primeiro passo"}
-else if(n<e0){cd.dataset.b=(Math.floor((n-s0)/D)+1)+"/7";cd.dataset.s="dia da semana solidária"}
-var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:.15});
-$(".rv").forEach(function(el,i){el.style.transitionDelay=(i%3)*90+"ms";io.observe(el)});
-setTimeout(function(){$(".rk i").forEach(function(b,i){setTimeout(function(){b.style.width=b.dataset.w+"%"},i*140)})},700);
-if(!rm)addEventListener("pointermove",function(e){var x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;$(".fc").forEach(function(c){var k=+c.dataset.d;c.style.translate=(x*k)+"px "+(y*k)+"px"})});
-
-var slots=$(".slot"),blob=document.getElementById("blob"),bb=blob.querySelector("b"),bs=blob.querySelector("span"),cur=-1;
-function rgb(h){return [1,3,5].map(function(i){return parseInt(h.substr(i,2),16)})}
-function lerp(a,b,t){return a+(b-a)*t}
-function size(sl,w,h){return Math.min(Math.min(w,h)*.42,w*.82/(sl.dataset.b.length*.58))}
-function morph(){
-  var line=innerHeight*.55,R=slots.map(function(s){var r=s.getBoundingClientRect();return{x:r.left,y:r.top,w:r.width,h:r.height,cy:r.top+r.height/2}});
-  var i=0;for(var k=0;k<R.length;k++){if(R[k].cy<=line)i=k}
-  var j=Math.min(i+1,R.length-1),t=0;
-  if(j!==i){var u=(line-R[i].cy)/(R[j].cy-R[i].cy);t=Math.max(0,Math.min(1,(u-.2)/.6));t=t*t*(3-2*t)}
-  if(rm)t=t>.5?1:0;
-  var a=R[i],b=R[j],sa=slots[i],sb=slots[j],ra=Math.min(+sa.dataset.r,a.w/2,a.h/2),rb=Math.min(+sb.dataset.r,b.w/2,b.h/2),ca=rgb(sa.dataset.c),cb=rgb(sb.dataset.c);
-  blob.style.width=lerp(a.w,b.w,t)+"px";blob.style.height=lerp(a.h,b.h,t)+"px";
-  blob.style.transform="translate("+lerp(a.x,b.x,t)+"px,"+lerp(a.y,b.y,t)+"px)";
-  blob.style.borderRadius=lerp(ra,rb,t)+"px";
-  blob.style.background="rgb("+ca.map(function(c,q){return Math.round(lerp(c,cb[q],t))}).join(",")+")";
-  var near=t>.5?j:i;if(near!==cur){cur=near;bb.textContent=slots[near].dataset.b;bs.textContent=slots[near].dataset.s}
-  var fs=lerp(size(sa,a.w,a.h),size(sb,b.w,b.h),t);bb.style.fontSize=fs+"px";bs.style.fontSize=Math.max(11,fs*.2)+"px";
-}
-var hd=document.getElementById("hd"),bar=document.getElementById("bar"),cards=$(".card");
-function tick(){
-  var de=document.documentElement;bar.style.transform="scaleX("+de.scrollTop/(de.scrollHeight-de.clientHeight||1)+")";
-  hd.classList.toggle("sc",scrollY>10);
-  cards.forEach(function(c,q){var nx=cards[q+1];if(!nx)return;var d=Math.max(0,Math.min(1,(innerHeight-nx.getBoundingClientRect().top)/innerHeight));c.style.transform="scale("+(1-d*.06)+")"});
-  morph();
-}
-var raf=0;function req(){if(!raf)raf=requestAnimationFrame(function(){raf=0;tick()})}
-addEventListener("scroll",req,{passive:true});addEventListener("resize",req);
-(document.fonts&&document.fonts.ready||Promise.resolve()).then(tick);tick();
-})();
-</script>
+<script src="js/main.js"></script>
 </body>
 </html>
