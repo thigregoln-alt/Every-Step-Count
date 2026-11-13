@@ -1,7 +1,7 @@
 # 👟 ATEC Palmela | #TodosOsPassosContam
 ### Every Step Counts – A Week of Energy and Solidarity!
 
-<img width="507" height="458" alt="image" src="https://github.com/user-attachments/assets/94c14a8d-c3cc-4a0b-b418-4e31d90f2534" />
+<img width="507" height="458" alt="image" align="centered" src="https://github.com/user-attachments/assets/94c14a8d-c3cc-4a0b-b418-4e31d90f2534" />
 
 From **November 16 to 22**, ATEC Palmela joins the **#TodosOsPassosContam** initiative, promoted by the Galp Foundation, turning physical activity into meals for those in need.
 
