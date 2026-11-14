@@ -11,6 +11,20 @@ fr:'<svg viewBox="0 0 36 24" preserveAspectRatio="none"><rect width="36" height=
 
 /* chave = texto em português · valor = [inglês, espanhol, francês] */
 var D={
+"O teu movimento.":["Your movement.", "Tu movimiento.", "Ton mouvement."],
+"Uma refeição":["A meal", "Una comida", "Un repas"],
+"para alguém.":["for someone.", "para alguien.", "pour quelqu’un."],
+"PASSOS":["STEPS","PASOS","PAS"],
+"REFEIÇÕES":["MEALS","COMIDAS","REPAS"],
+"Todos os":["Every", "Todos los", "Tous les"],
+"passos":["steps", "pasos", "pas"],
+"ATEC PALMELA × FUNDAÇÃO GALP":["ATEC PALMELA × FUNDAÇÃO GALP", "ATEC PALMELA × FUNDAÇÃO GALP", "ATEC PALMELA × FUNDAÇÃO GALP"],
+"16 — 22 NOV / MOVIMENTO SOLIDÁRIO":["16 — 22 NOV / SOLIDARITY IN MOTION", "16 — 22 NOV / MOVIMIENTO SOLIDARIO", "16 — 22 NOV / MOUVEMENT SOLIDAIRE"],
+"UM PEQUENO GESTO.":["ONE SMALL GESTURE.", "UN PEQUEÑO GESTO.", "UN PETIT GESTE."],
+"Um impacto":["An impact", "Un impacto", "Un impact"],
+"maior.":["that matters.", "mayor.", "plus grand."],
+"PASSOS → REFEIÇÕES":["STEPS → MEALS", "PASOS → COMIDAS", "PAS → REPAS"],
+"A meta nacional do movimento":["The movement’s national goal","La meta nacional del movimiento","L’objectif national du mouvement"],
 /* menu e cabeçalho */
 "Desafio":["Challenge","Desafío","Défi"],
 "Como funciona":["How it works","Cómo funciona","Comment ça marche"],
@@ -36,6 +50,14 @@ var D={
 "dias para o primeiro passo":["days until the first step","días para el primer paso","jours avant le premier pas"],
 "dia para o primeiro passo":["day until the first step","día para el primer paso","jour avant le premier pas"],
 "dia da semana solidária":["day of the solidarity week","día de la semana solidaria","jour de la semaine solidaire"],
+
+"Seguinte":["Next","Siguiente","Suivant"],
+"Início":["Home","Inicio","Accueil"],
+"A semana.":["The week.","La semana.","La semaine."],
+"Sete dias, uma só equipa.":["Seven days, one team.","Siete días, un solo equipo.","Sept jours, une seule équipe."],
+"Hoje":["Today","Hoy","Aujourd’hui"],
+"Concluído":["Done","Completado","Terminé"],
+"Em breve":["Soon","Pronto","Bientôt"],
 
 /* rodapé */
 "Vamos dar o nosso melhor passo.":["Let’s take our best step.","Demos nuestro mejor paso.","Faisons notre meilleur pas."],
@@ -105,7 +127,7 @@ var D={
 "Conta criada (falta ligar ao servidor).":["Account created (server not connected yet).","Cuenta creada (falta conectar con el servidor).","Compte créé (serveur pas encore connecté)."]
 };
 
-var lang="pt";
+var lang="en"; /* idioma por defeito: inglês (a escolha do utilizador fica guardada) */
 try{var sv=localStorage.getItem("lang");if(sv&&NAMES[sv])lang=sv}catch(e){}
 
 var textOrig=new WeakMap(),attrOrig=new WeakMap(),title0=document.title;

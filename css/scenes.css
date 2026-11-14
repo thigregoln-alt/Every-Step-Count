@@ -1,0 +1,34 @@
+/* Cenas partilhadas pelas páginas: rota, botão seguinte */
+
+
+
+/* desafio */
+.dz{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,6vw,96px);align-items:end;margin-top:clamp(32px,5vw,64px)}
+.big{font-size:clamp(6rem,16vw,15rem);font-weight:800;letter-spacing:-.06em;line-height:.82;color:var(--forest);font-variant-numeric:tabular-nums}
+.dz .lb{font-size:clamp(1.2rem,2vw,1.8rem);font-weight:600;line-height:1.15;margin-top:14px;max-width:18ch}
+.dz p{font-size:clamp(1.1rem,1.5vw,1.4rem);max-width:42ch;margin-bottom:18px}
+@media(max-width:860px){.dz{grid-template-columns:1fr}}
+
+/* rota desenhada com o scroll (cartões .rc; a classe .sc é do cabeçalho) */
+.route{position:relative;margin-top:clamp(20px,4vw,48px)}
+#rsvg{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}
+.stop{position:relative;z-index:2;min-height:74vh;display:flex;align-items:center;justify-content:flex-end}
+.stop:nth-child(even){justify-content:flex-start}
+.mk{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;background:var(--bg);border:4px solid var(--forest);display:grid;place-items:center;font-weight:800;font-size:1.3rem;transform:translate(-50%,-50%) scale(.6);transition:transform .5s cubic-bezier(.2,.8,.2,1),background .4s}
+.stop.on .mk{background:var(--amber);transform:translate(-50%,-50%) scale(1)}
+.rc{width:min(42%,480px);background:#fff;border-radius:28px;padding:clamp(22px,3vw,38px);box-shadow:0 30px 60px -28px rgba(19,32,27,.35);opacity:.2;transform:translateY(34px) scale(.96);transition:opacity .7s,transform .7s cubic-bezier(.2,.8,.2,1)}
+.stop.on .rc{opacity:1;transform:none}
+.rc h3{font-size:clamp(1.5rem,2.6vw,2.4rem);font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:12px}
+.rc p{font-weight:600;line-height:1.35}
+.rc .big{font-size:clamp(4rem,9vw,7rem);margin:4px 0 10px}
+@media(max-width:760px){.stop,.stop:nth-child(even){justify-content:flex-start;padding-left:58px;min-height:60vh}.mk{left:28px}.rc{width:100%}}
+
+/* botão página seguinte */
+.nx{position:relative;z-index:2;display:flex;justify-content:flex-end;padding:0 var(--m) clamp(56px,8vw,110px)}
+.next{display:inline-flex;flex-direction:column;align-items:flex-start;gap:6px;position:relative;background:var(--forest);color:var(--bg);padding:1em 3.6em 1em 1.5em;border-radius:20px;text-decoration:none;font-weight:800;font-size:clamp(1.3rem,2.4vw,2rem);letter-spacing:-.03em;line-height:1;transition:transform .3s,background .3s}
+.next small{font-size:.66rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.next::after{content:"→";position:absolute;right:1.1em;top:50%;transform:translateY(-50%);font-size:1.3em;transition:transform .3s}
+.next:hover{transform:translateY(-4px);background:#2E5E4A}
+.next:hover::after{transform:translate(6px,-50%)}
+
+@media(prefers-reduced-motion:reduce){.rc{opacity:1;transform:none}}

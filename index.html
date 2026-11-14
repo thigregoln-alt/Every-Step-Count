@@ -6,31 +6,62 @@
 <title>ATEC Palmela · #TodosOsPassosContam</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<script src="js/transition.js"></script>
+
+<link rel="stylesheet" href="css/scenes.css">
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/components.css">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/hero.css">
+<link rel="stylesheet" href="css/lace.css">
 </head>
 <body>
 <header id="hd"><div class="brand"><a class="logo" href="index.html" aria-label="ATEC Palmela"><span class="lg-atec" role="img" aria-label="ATEC Palmela"></span></a><span class="pt"><span class="lg-galp" role="img" aria-label="Fundação Galp"></span></span></div><nav><a href="desafio.html">Desafio</a><a href="como-funciona.html">Como funciona</a><a href="classificacao.html">Classificação</a><a href="destaques.html">Destaques</a></nav><a class="btn b1" href="login.html">Login</a><div id="bar"></div></header>
-<div id="blob"><b></b><span></span></div>
+
 
 <main>
-<section class="hero" id="topo">
-  <div>
-    <span class="tag">16 a 22 de novembro · Palmela</span>
-    <h1><span class="ln"><span>Todos os passos</span></span><span class="ln"><span>contam.</span></span></h1>
-    <p class="sub">Uma semana de energia solidária: cada quilómetro dos formandos da ATEC Palmela vira refeições para quem mais precisa.</p>
-    <div class="acts"><a class="btn b1" href="como-funciona.html">Como participar</a><a class="btn b2" href="classificacao.html">Ver classificação →</a></div>
+<div class="lace-scroll">
+<section class="stage pg" id="topo">
+  
+  <div class="hero-composition">
+    <svg class="lace-art lace-back" viewBox="0 0 1200 520" fill="none" aria-hidden="true"><defs><filter id="lace-shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="3" flood-color="#13201b" flood-opacity=".16"/></filter><linearGradient id="lace-color" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#bac9a1"/><stop offset=".45" stop-color="#8b9e75"/><stop offset="1" stop-color="#536e4e"/></linearGradient></defs><g class="lace-body" filter="url(#lace-shadow)"><path class="cord cord-edge"/><path class="cord cord-fill"/><path class="cord cord-weave"/></g><path class="lace-tip tip-start"/><path class="lace-tip tip-end"/></svg>
+    <svg class="lace-art lace-front" viewBox="0 0 1200 520" fill="none" aria-hidden="true"><g><path class="cord cord-edge"/><path class="cord cord-fill"/><path class="cord cord-weave"/></g></svg>
+    <div class="lace-message"><span>O teu movimento.</span><strong>Uma refeição<br>para alguém.</strong></div>
+
+    <div class="hero-heading"><h1><span class="hero-kicker">Todos os</span><span class="hero-word">passos</span><em>contam.</em></h1></div>
+
   </div>
-  <div class="vis">
-    <div class="mesh"><b></b><b></b><b></b></div>
-    <div class="fc fa" data-d="14"><h3>Ranking de turmas <small>exemplo</small></h3>
-      <div class="rk"><span>Turma A</span><i data-w="92"></i><span>42 km</span></div>
-      <div class="rk"><span>Turma B</span><i data-w="74"></i><span>34 km</span></div>
-      <div class="rk"><span>Turma C</span><i data-w="58"></i><span>27 km</span></div>
-      <div class="rk"><span>Turma D</span><i data-w="40"></i><span>18 km</span></div></div>
-    <div class="fc fb" data-d="-18"><span>Total ATEC Palmela</span><b>0 km</b><span>sobe a cada submissão</span></div>
-    <div class="slot" id="cd" data-c="#EBC98A" data-r="999" data-b="3" data-s="dias para o primeiro passo"></div>
+  <div class="hero-bottom"><p class="sub">Uma semana de energia solidária: cada quilómetro dos formandos da ATEC Palmela vira refeições para quem mais precisa.</p><div class="acts"><a class="btn b1" href="como-funciona.html">Como participar</a></div></div>
+</section>
+</div>
+
+<section class="fx">
+  <div class="facts">
+    <div class="dc rv" style="background:var(--amber)"><div class="fn" id="bn"></div><p id="bl"></p></div>
+    <div class="dc rv" style="background:var(--sage)"><div class="fn">1,5M</div><p>refeições para a Rede de Emergência Alimentar</p></div>
+    <div class="dc rv" style="background:var(--mist)"><div class="fn">StepUp</div><p>um grupo por turma</p></div>
   </div>
 </section>
+
+
+
+<section class="participation" id="participar"><h2>Uma turma. Uma equipa.</h2><div class="scroll-deck">
+<article class="deck-card"><span>StepUp</span><h3>O movimento começa contigo.</h3><p>Cria um grupo com a tua turma e acompanha os passos entre as aulas e nos tempos livres.</p></article>
+<article class="deck-card"><span>O delegado</span><h3>Cada passo fica registado.</h3><p>No final do dia, o delegado reúne os passos, converte-os em quilómetros e submete o print da turma.</p></article>
+<article class="deck-card"><span>ATEC Palmela</span><h3>Juntos, chegamos mais longe.</h3><p>Somamos os quilómetros de todas as turmas para contribuir para a iniciativa da Fundação Galp.</p></article>
+</div></section>
+<section class="recognition"><h2>O esforço merece destaque.</h2><div class="award-grid">
+<button class="award-tile" data-morph aria-haspopup="dialog" data-detail="A turma que registar mais quilómetros no dia anterior."><span class="tile-art" aria-hidden="true">↗</span><span class="tile-copy"><strong>Turma Campeã do Dia</strong><span>Mais longe, juntos.</span></span><span class="tile-open" aria-hidden="true">↗</span></button><button class="award-tile" data-morph aria-haspopup="dialog" data-detail="A turma com o maior crescimento de quilómetros face ao seu próprio registo do dia anterior."><span class="tile-art" aria-hidden="true">↑</span><span class="tile-copy"><strong>Turma Revelação</strong><span>Superar o dia anterior.</span></span><span class="tile-open" aria-hidden="true">↗</span></button><button class="award-tile" data-morph aria-haspopup="dialog" data-detail="O formando ou formanda com mais passos num único dia, com base nos prints partilhados pelos delegados."><span class="tile-art" aria-hidden="true">✦</span><span class="tile-copy"><strong>Passada de Ouro</strong><span>Cada passo tem valor.</span></span><span class="tile-open" aria-hidden="true">↗</span></button><button class="award-tile" data-morph aria-haspopup="dialog" data-detail="A distinção para as turmas em que todos os elementos inscritos no grupo StepUp registaram atividade nesse dia."><span class="tile-art" aria-hidden="true">◎</span><span class="tile-copy"><strong>Espírito de Equipa</strong><span>Todos fazem parte.</span></span><span class="tile-open" aria-hidden="true">↗</span></button></div></section>
+<dialog class="morph-dialog" aria-labelledby="award-title"><button class="dialog-close" aria-label="Fechar">×</button><div class="dialog-art" aria-hidden="true"></div><h2 id="award-title"></h2><p class="dialog-detail"></p></dialog>
+<section class="goal" id="meta">
+  <p class="goal-label">A meta nacional do movimento</p><h2 class="rv">Passos que viram refeições.</h2>
+  <div class="gn rv" id="gn"><span id="gv">0,0</span><span>M</span></div>
+  <p class="gl rv">refeições para a Rede de Emergência Alimentar</p>
+  <div class="gbar" aria-hidden="true"><i id="gb"></i></div>
+</section>
 </main>
+
+<div class="nx ctr"><a class="next" href="desafio.html"><small>Seguinte</small>Desafio</a></div>
 
 <footer>
   <div class="fr"><h2 style="max-width:12ch">Vamos dar o nosso melhor passo.</h2><div class="slot" data-c="#BFD2BB" data-r="999" data-b="Bora!" data-s="16 a 22 de novembro"></div></div>
@@ -38,7 +69,14 @@
   <small>Porque na ATEC Palmela acreditamos que o futuro se constrói com competência técnica, espírito de equipa e muita solidariedade. Iniciativa #TodosOsPassosContam, promovida pela Fundação Galp.</small>
 </footer>
 
+
+
 <script src="js/i18n.js"></script>
 <script src="js/main.js"></script>
+<script src="js/home.js"></script>
+<script src="js/enhance.js"></script>
+<script src="js/components.js"></script>
+<script src="js/interactions.js"></script>
+<script src="js/lace.js"></script>
 </body>
 </html>

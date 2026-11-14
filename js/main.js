@@ -21,12 +21,12 @@ setTimeout(function(){$(".rk i").forEach(function(b,i){setTimeout(function(){b.s
 if(!rm)addEventListener("pointermove",function(e){var x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;$(".fc").forEach(function(c){var k=+c.dataset.d;c.style.translate=(x*k)+"px "+(y*k)+"px"})});
 
 /* Bolha que se transforma de um .slot para o seguinte, dentro de cada página */
-var slots=$(".slot"),blob=document.getElementById("blob"),bb=blob.querySelector("b"),bs=blob.querySelector("span"),cur=-1;
+var slots=$(".slot"),blob=document.getElementById("blob"),bb=blob&&blob.querySelector("b"),bs=blob&&blob.querySelector("span"),cur=-1;
 function rgb(h){return [1,3,5].map(function(i){return parseInt(h.substr(i,2),16)})}
 function lerp(a,b,t){return a+(b-a)*t}
 function size(sl,w,h){return Math.min(Math.min(w,h)*.42,w*.82/(sl.dataset.b.length*.58))}
 function morph(){
-  if(!slots.length)return;
+  if(!blob||!slots.length)return;
   var line=innerHeight*.55,R=slots.map(function(s){var r=s.getBoundingClientRect();return{x:r.left,y:r.top,w:r.width,h:r.height,cy:r.top+r.height/2}});
   var i=0;for(var k=0;k<R.length;k++){if(R[k].cy<=line)i=k}
   var j=Math.min(i+1,R.length-1),t=0;
@@ -47,7 +47,7 @@ function tick(){
   var de=document.documentElement;bar.style.transform="scaleX("+de.scrollTop/(de.scrollHeight-de.clientHeight||1)+")";
   hd.classList.toggle("sc",scrollY>10);
   cards.forEach(function(c,q){var nx=cards[q+1];if(!nx)return;var d=Math.max(0,Math.min(1,(innerHeight-nx.getBoundingClientRect().top)/innerHeight));c.style.transform="scale("+(1-d*.06)+")"});
-  morph();
+  morph();routeTick();
 }
 var raf=0;function req(){if(!raf)raf=requestAnimationFrame(function(){raf=0;tick()})}
 addEventListener("scroll",req,{passive:true});addEventListener("resize",req);
@@ -58,6 +58,36 @@ addEventListener("langchange",function(){
   countdown();
   cur=-1;tick();
 });
+
+/* Rota desenhada com o scroll (só existe em como-funciona.html) */
+var route=document.getElementById("route"),rsvg=document.getElementById("rsvg"),stops=$(".stop"),rp=null,rl=0;
+function buildRoute(){
+  if(!route||!rsvg||!stops.length)return;
+  var R=route.getBoundingClientRect(),w=R.width,h=R.height;
+  var ms=stops.map(function(s){var r=s.querySelector(".mk").getBoundingClientRect();return{x:r.left+r.width/2-R.left,y:r.top+r.height/2-R.top}});
+  var d="M"+ms[0].x+" "+ms[0].y;
+  for(var i=1;i<ms.length;i++){
+    var a=ms[i-1],b=ms[i],dy=(b.y-a.y)*.5,sw=Math.min(w*.14,90)*(i%2?1:-1);
+    d+=" C"+(a.x+sw)+" "+(a.y+dy)+","+(b.x-sw)+" "+(b.y-dy)+","+b.x+" "+b.y;
+  }
+  rsvg.setAttribute("viewBox","0 0 "+w+" "+h);
+  rsvg.innerHTML='<path d="'+d+'" fill="none" stroke="rgba(19,32,27,.16)" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12"/><path id="rp" d="'+d+'" fill="none" stroke="#1F3D32" stroke-width="4" stroke-linecap="round"/>';
+  rp=document.getElementById("rp");rl=rp.getTotalLength();rp.style.strokeDasharray=rl;
+  routeTick();
+}
+function routeTick(){
+  if(!rp||!route)return;
+  var R=route.getBoundingClientRect(),line=innerHeight*.6,p=Math.max(0,Math.min(1,(line-R.top)/R.height));
+  rp.style.strokeDashoffset=rm?0:rl*(1-p);
+  stops.forEach(function(s){var r=s.querySelector(".mk").getBoundingClientRect();s.classList.toggle("on",rm||r.top+r.height/2<line)});
+}
+if(route){
+  buildRoute();
+  addEventListener("resize",buildRoute);
+  addEventListener("load",buildRoute);
+  addEventListener("langchange",function(){setTimeout(buildRoute,50)});
+  (document.fonts&&document.fonts.ready||Promise.resolve()).then(buildRoute);
+}
 
 /* Login / criar conta (só existe em login.html) */
 var auth=document.getElementById("auth");

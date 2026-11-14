@@ -1,0 +1,18 @@
+.lace-scroll{height:175svh;position:relative;background:var(--bg)}
+.lace-scroll .stage{position:sticky;top:0;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:105px;padding-bottom:25px}
+.lace-scroll .hero-edition,.lace-scroll .hero-composition,.lace-scroll .hero-bottom{width:100%}
+.lace-scroll .hero-composition{position:relative;isolation:isolate;padding:20px 0 25px;flex:1;display:flex;align-items:center;max-height:640px}
+.lace-scroll .hero-heading{z-index:1;animation:none;opacity:var(--title-opacity,1);transform:translateY(var(--title-y,0px))}
+.lace-scroll .stage h1::after{content:none}
+.lace-scroll .stage h1 .hero-word{font-size:clamp(100px,22vw,340px)}
+.lace-scroll .stage h1 .hero-kicker{font-size:clamp(35px,4.4vw,70px)}
+.lace-scroll .stage h1 em{font-size:clamp(60px,9vw,145px)}
+.lace-art{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.lace-back{z-index:0}.lace-front{z-index:2;opacity:var(--front-opacity,1)}
+.cord{stroke-linecap:round;stroke-linejoin:round}.cord-edge{stroke:#4f6745;stroke-width:15}.cord-fill{stroke:url(#lace-color);stroke-width:12}.cord-weave{stroke:#ecedcf;stroke-width:9;stroke-dasharray:1 5;stroke-opacity:.4}
+.lace-tip{stroke:#c0b7a2;stroke-width:16;stroke-linecap:round}
+.lace-message{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;z-index:3;opacity:var(--meal-opacity,0);pointer-events:none;color:var(--forest);width:38%}
+.lace-message span{font-size:12px;display:block;margin-bottom:14px}.lace-message strong{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(24px,3vw,48px);font-weight:400;line-height:1.05;letter-spacing:-.035em}
+@media(max-width:600px){.lace-scroll{height:155svh}.lace-scroll .stage{padding-top:145px;min-height:100svh}.lace-scroll .hero-composition{min-height:260px;max-height:390px;padding:20px 0}.lace-scroll .stage h1 .hero-word{font-size:25vw}.lace-scroll .stage h1 .hero-kicker{font-size:10vw}.lace-scroll .stage h1 em{font-size:21vw}.lace-art{width:135%;left:-17.5%}.lace-message{width:57%}.lace-message strong{font-size:25px}.lace-message span{font-size:10px}.lace-scroll .hero-bottom{gap:16px;padding-top:16px}.lace-scroll .sub{font-size:13px}.lace-scroll .acts{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.lace-scroll{height:auto}.lace-scroll .stage{position:relative}.lace-art{opacity:.8}.lace-message{display:none}}
+@media(max-height:650px) and (min-width:601px){.lace-scroll{height:auto}.lace-scroll .stage{position:relative;min-height:760px}}
