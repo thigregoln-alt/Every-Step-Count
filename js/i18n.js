@@ -177,7 +177,27 @@ var D={
 "Podes enviar no máximo 4 prints.":["You can send at most 4 screenshots.","Puedes enviar como máximo 4 capturas.","Tu peux envoyer 4 captures au maximum."],
 "A enviar…":["Sending…","Enviando…","Envoi…"],
 "Pontuação enviada. Obrigado!":["Score sent. Thank you!","Puntuación enviada. ¡Gracias!","Score envoyé. Merci !"],
-"Não foi possível enviar. Tenta novamente.":["Couldn’t send. Please try again.","No se pudo enviar. Inténtalo de nuevo.","Envoi impossible. Réessaie."]
+"Não foi possível enviar. Tenta novamente.":["Couldn’t send. Please try again.","No se pudo enviar. Inténtalo de nuevo.","Envoi impossible. Réessaie."],
+
+/* rankings */
+"Ver ranking":["View ranking","Ver ranking","Voir le classement"],
+"Ver turmas":["View classes","Ver clases","Voir les classes"],
+"Dados de teste":["Test data","Datos de prueba","Données de test"],
+"Os passos de cada turma na semana de 16 a 22 de novembro.":["Each class’s steps in the week of 16 to 22 November.","Los pasos de cada clase en la semana del 16 al 22 de noviembre.","Les pas de chaque classe pendant la semaine du 16 au 22 novembre."],
+"Passos por turma":["Steps per class","Pasos por clase","Pas par classe"],
+"turmas em competição":["classes competing","clases en competición","classes en compétition"],
+"formandos a caminhar":["students walking","alumnos caminando","élèves en marche"],
+"Passos":["Steps","Pasos","Pas"],
+"Distância":["Distance","Distancia","Distance"],
+"Escolhe uma turma para ver quem andou mais.":["Pick a class to see who walked the most.","Elige una clase para ver quién caminó más.","Choisis une classe pour voir qui a le plus marché."],
+"turmas":["classes","clases","classes"],
+"formandos":["students","alumnos","élèves"],
+"formando":["student","alumno","élève"],
+"Todas as turmas":["All classes","Todas las clases","Toutes les classes"],
+"Quem andou mais nesta turma, de 16 a 22 de novembro.":["Who walked the most in this class, from 16 to 22 November.","Quién caminó más en esta clase, del 16 al 22 de noviembre.","Qui a le plus marché dans cette classe, du 16 au 22 novembre."],
+"total da turma":["class total","total de la clase","total de la classe"],
+"Turma não encontrada.":["Class not found.","Clase no encontrada.","Classe introuvable."],
+"Ainda não há dados.":["No data yet.","Aún no hay datos.","Pas encore de données."]
 };
 
 var lang="en"; /* idioma por defeito: inglês (a escolha do utilizador fica guardada) */

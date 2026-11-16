@@ -1,0 +1,77 @@
+/* Rankings: gráfico das turmas e listas de formandos.
+   Usa as cores, a letra e os cantos redondos do style.css para ficar igual ao resto do site. */
+
+/* topo da página: ligação para voltar atrás e texto por baixo do título */
+.volta{display:block;width:fit-content;margin-bottom:22px;font-weight:600;font-size:.95rem;text-decoration:none;opacity:.75;transition:opacity .2s}
+.volta::before{content:"←";display:inline-block;margin-right:.5em;transition:transform .3s}
+.volta:hover{opacity:1}
+.volta:hover::before{transform:translateX(-5px)}
+.intro{margin-top:22px;font-size:clamp(1.1rem,1.5vw,1.4rem);max-width:42ch}
+.vazio{font-weight:600;opacity:.7}
+
+/* ---------- gráfico das turmas ---------- */
+/* --alt: altura da zona das barras · --topo: espaço reservado para o nome por cima da barra mais alta */
+.grafico{--alt:clamp(300px,46vh,460px);--topo:2.6rem;display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(10px,1.4vw,20px);background:#ECEEE7;border-radius:clamp(20px,3vw,36px);padding:clamp(18px,3vw,44px)}
+
+/* eixo da esquerda (passos): fica parado enquanto as barras deslizam */
+.eixo{position:relative;height:var(--alt);padding-top:var(--topo);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;font-size:.82rem;font-weight:600;font-variant-numeric:tabular-nums}
+.eixo span{display:flex;align-items:center;height:0;opacity:.7;white-space:nowrap}
+.eixo-titulo{position:absolute;right:0;top:0;font-size:.66rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+
+/* janela com scroll para o lado quando as turmas não cabem */
+.barras-janela{overflow-x:auto;overflow-y:hidden;padding-bottom:14px;scrollbar-width:thin;scrollbar-color:var(--forest) rgba(19,32,27,.1);border-radius:8px}
+.barras-janela:focus-visible{outline:3px solid var(--amber);outline-offset:4px}
+.barras{position:relative;display:flex;gap:clamp(10px,1.2vw,18px);list-style:none;margin:0;padding:0 clamp(6px,1vw,14px);min-width:100%;width:max-content}
+/* linhas horizontais do gráfico (uma por cada número do eixo) e a linha de base */
+.barras::before{content:"";position:absolute;left:0;right:0;top:var(--topo);height:calc(var(--alt) - var(--topo));background:linear-gradient(rgba(19,32,27,.14) 0 1px,transparent 1px) 0 0/100% 25%;border-bottom:2px solid var(--forest);pointer-events:none}
+
+/* cada turma: nome em cima, barra com a altura dos passos, e os números por baixo */
+.barra{position:relative;flex:1 0 clamp(74px,5.4vw,104px);max-width:170px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.barra-area{width:100%;height:var(--alt);display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.barra-nome{font-size:clamp(.78rem,1vw,.95rem);font-weight:800;letter-spacing:-.01em;line-height:1;white-space:nowrap;margin-bottom:8px}
+.barra-cor{display:block;width:100%;height:calc((100% - var(--topo))*var(--p,0));background:var(--forest);border-radius:14px 14px 0 0;transition:height 1.6s cubic-bezier(.2,.8,.2,1),background .3s}
+/* pódio: as três primeiras turmas com as cores de destaque do site */
+.barra:nth-child(1) .barra-cor{background:var(--forest)}
+.barra:nth-child(2) .barra-cor{background:#4F7A66}
+.barra:nth-child(3) .barra-cor{background:#7FA891}
+.barra:nth-child(n+4) .barra-cor{background:var(--sage)}
+.barra:hover .barra-cor{background:#2E5E4A}
+.barra-passos{margin-top:12px;font-size:.86rem;font-weight:800;line-height:1.2;white-space:nowrap;font-variant-numeric:tabular-nums}
+.barra-km{font-size:.8rem;opacity:.65;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ---------- lista de formandos ---------- */
+/* faixas de ponta a ponta, iguais às .row da Classificação */
+.lista{width:calc(100% + var(--m)*2);margin-inline:calc(var(--m)*-1);border-collapse:separate;border-spacing:0 8px;text-align:left}
+.lista th{padding:0 12px 4px;font-size:.66rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.lista td{background:#ECEEE7;padding:clamp(14px,1.7vw,22px) 12px}
+.lista th:first-child,.lista td:first-child{padding-left:var(--m)}
+.lista th:last-child,.lista td:last-child{padding-right:var(--m)}
+.lista .pos{width:1%;white-space:nowrap}
+.lista td.pos span{display:grid;place-items:center;width:2.3em;height:2.3em;border-radius:50%;border:3px solid var(--forest);font-weight:800;font-size:.9rem;font-variant-numeric:tabular-nums}
+.lista tbody tr:nth-child(1) .pos span{background:var(--amber)}
+.lista tbody tr:nth-child(2) .pos span{background:var(--mist)}
+.lista tbody tr:nth-child(3) .pos span{background:var(--sand)}
+.lista .nome{font-size:clamp(1.15rem,1.9vw,1.7rem);font-weight:800;letter-spacing:-.025em;line-height:1.05}
+.lista .nome small{display:none;margin-top:4px;font-size:.78rem;font-weight:600;letter-spacing:0;opacity:.65}
+.lista .turma{font-weight:600;white-space:nowrap}
+.lista .num{text-align:right;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ---------- entrada (só na primeira vez que a página é desenhada) ---------- */
+.entra tbody tr,.entra .row{animation:sobe .9s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(.45s + var(--i,0)*.05s)}
+@keyframes sobe{from{opacity:0;transform:translateY(34px)}}
+
+/* telemóvel */
+@media(max-width:760px){
+  .grafico{--alt:300px;--topo:2.2rem;margin-inline:calc(var(--m)*-.5)}
+  .eixo{font-size:.72rem}
+  .lista td{padding-inline:8px}
+  .lista th{padding-inline:8px}
+  .lista .turma{display:none}
+  .lista .nome small{display:block}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .barra-cor{transition:none}
+  .entra tbody tr,.entra .row{animation:none}
+  .volta::before{transition:none}
+}

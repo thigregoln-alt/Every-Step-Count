@@ -15,10 +15,10 @@
 
 <main>
 <section class="t2 pg" id="tabela">
-  <div class="top"><h2 class="rv">Quem lidera a tabela?</h2><div class="slot" data-c="#CFDDE0" data-r="18" data-b="0 km" data-s="total acumulado pela ATEC Palmela"></div></div>
-  <a class="row rv" href="classificacao.html"><h3>Ranking de turmas</h3><p>Que equipa soma mais passos.</p><span>Abre a 16 de novembro</span></a>
-  <a class="row rv" href="classificacao.html"><h3>Ranking de formandos</h3><p>Quem deu mais passos em toda a ATEC.</p><span>Abre a 16 de novembro</span></a>
-  <a class="row rv" href="classificacao.html"><h3>Dentro da equipa</h3><p>Em cada turma, quem andou mais.</p><span>Abre a 16 de novembro</span></a>
+  <div class="top"><h2 class="rv">Quem lidera a tabela?</h2><div class="slot" id="total-atec" data-c="#CFDDE0" data-r="18" data-b="0 km" data-s="total acumulado pela ATEC Palmela"></div></div>
+  <a class="row rv" href="ranking-turmas.html"><h3>Ranking de turmas</h3><p>Que equipa soma mais passos.</p><span>Ver ranking</span></a>
+  <a class="row rv" href="ranking-formandos.html"><h3>Ranking de formandos</h3><p>Quem deu mais passos em toda a ATEC.</p><span>Ver ranking</span></a>
+  <a class="row rv" href="ranking-equipa.html"><h3>Dentro da equipa</h3><p>Em cada turma, quem andou mais.</p><span>Ver turmas</span></a>
 </section>
 </main>
 
@@ -34,6 +34,7 @@
 <script>window.supabase||document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"><\/script>')</script>
 <script src="js/supabase-config.js"></script>
 <script src="js/i18n.js"></script>
+<script src="js/ranking.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
