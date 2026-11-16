@@ -11,6 +11,17 @@ fr:'<svg viewBox="0 0 36 24" preserveAspectRatio="none"><rect width="36" height=
 
 /* chave = texto em português · valor = [inglês, espanhol, francês] */
 var D={
+"Cada":["Every", "Cada", "Chaque"],
+"passo":["step", "paso", "pas"],
+"Descobre porquê":["Discover why", "Descubre por qué", "Découvre pourquoi"],
+"Mais longe.":["Further.", "Más lejos.", "Plus loin."],
+"Por alguém.":["For someone.", "Por alguien.", "Pour quelqu’un."],
+"A ATEC Palmela junta-se ao movimento #TodosOsPassosContam, da Fundação Galp. De 16 a 22 de novembro, os quilómetros das nossas turmas contribuem para uma causa comum.":["ATEC Palmela joins Fundação Galp’s #TodosOsPassosContam movement. From 16 to 22 November, the kilometres walked by our classes contribute to a shared cause.", "ATEC Palmela se une al movimiento #TodosOsPassosContam de la Fundação Galp. Del 16 al 22 de noviembre, los kilómetros de nuestras clases contribuyen a una causa común.", "ATEC Palmela rejoint le mouvement #TodosOsPassosContam de la Fundação Galp. Du 16 au 22 novembre, les kilomètres de nos classes contribuent à une cause commune."],
+"de refeições: a meta nacional para a Rede de Emergência Alimentar.":["meals: the national goal for the Food Emergency Network.", "de comidas: la meta nacional para la Red de Emergencia Alimentaria.", "de repas : l’objectif national pour le Réseau d’urgence alimentaire."],
+"Várias turmas.":["Many classes.", "Varias clases.", "Plusieurs classes."],
+"Uma só equipa.":["One team.", "Un solo equipo.", "Une seule équipe."],
+"A competição é entre turmas. A solidariedade é de todos.":["Classes compete. Everyone contributes.", "Las clases compiten. Todos contribuyen.", "Les classes rivalisent. Tout le monde contribue."],
+"Cada grupo acompanha os seus passos no StepUp. Os delegados reúnem os registos e os quilómetros somam-se ao total da ATEC Palmela, a submeter na plataforma oficial do movimento.":["Each group tracks its steps in StepUp. Class representatives collect the records, and the kilometres are added to ATEC Palmela’s total for submission on the movement’s official platform.", "Cada grupo registra sus pasos en StepUp. Los delegados reúnen los registros y los kilómetros se suman al total de ATEC Palmela, que se envía a la plataforma oficial del movimiento.", "Chaque groupe suit ses pas sur StepUp. Les délégués rassemblent les relevés et les kilomètres sont ajoutés au total d’ATEC Palmela, à soumettre sur la plateforme officielle du mouvement."],
 "O teu movimento.":["Your movement.", "Tu movimiento.", "Ton mouvement."],
 "Uma refeição":["A meal", "Una comida", "Un repas"],
 "para alguém.":["for someone.", "para alguien.", "pour quelqu’un."],
