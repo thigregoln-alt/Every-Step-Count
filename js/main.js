@@ -117,7 +117,7 @@ if(auth){
 
   function checkCode(c){
     if(Date.now()<lockUntil)return Promise.resolve("lock");
-    if(!sb){rpcErr=window.supabase?"preenche o URL e a anon key em js/supabase-config.js":"a biblioteca do Supabase não carregou";return Promise.resolve("nosupport")}
+    if(!sb){rpcErr=window.supabase?"configuração do Supabase em falta":"a biblioteca do Supabase não carregou";return Promise.resolve("nosupport")}
     return sb.rpc("check_access_code",{code:c.trim().toUpperCase()}).then(function(res){
       if(res.error){rpcErr=res.error.message||"";console.error(res.error);return "nosupport"}
       if(res.data===true){fails=0;return "ok"}
