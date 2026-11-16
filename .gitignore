@@ -1,0 +1,5 @@
+# Configuração local do Supabase (gerada no deploy a partir dos GitHub Secrets)
+js/supabase-config.js
+
+# Contém o código de acesso em texto: nunca vai para o GitHub
+supabase/setup.sql

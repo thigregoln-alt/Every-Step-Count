@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Submeter · ATEC Palmela · #TodosOsPassosContam</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/transition.js"></script>
+</head>
+<body>
+<header id="hd"><div class="brand"><a class="logo" href="index.html" aria-label="ATEC Palmela"><span class="lg-atec" role="img" aria-label="ATEC Palmela"></span></a><span class="pt"><span class="lg-galp" role="img" aria-label="Fundação Galp"></span></span></div><nav><a href="desafio.html">Desafio</a><a href="como-funciona.html">Como funciona</a><a href="classificacao.html">Classificação</a><a href="destaques.html">Destaques</a><a href="submeter.html" aria-current="page">Submeter</a></nav><a class="btn b1" href="login.html">Login</a><div id="bar"></div></header>
+<div id="blob"><b></b><span></span></div>
+
+<main>
+<section class="pg auth up" id="up">
+  <div class="auth-card">
+
+    <form id="f-up" class="af" novalidate>
+      <h1>Submete a pontuação.</h1>
+      <p class="hint">Carrega o print do StepUp com os passos da tua turma.</p>
+
+      <p class="lbl">Prints da pontuação</p>
+      <div class="drop" id="drop" tabindex="0" role="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        <strong>Arrasta os prints para aqui</strong>
+        <span>ou clica para escolher · também podes colar com Ctrl+V</span>
+        <small>PNG, JPG ou WebP · até 8 MB cada · máximo 4</small>
+        <input type="file" id="file" accept="image/png,image/jpeg,image/webp" multiple>
+      </div>
+      <ul class="thumbs" id="thumbs"></ul>
+
+      <p class="msg" role="alert" aria-live="polite"></p>
+      <button class="btn b1" type="submit">Enviar pontuação</button>
+      <button class="out" type="button" id="out">Terminar sessão</button>
+    </form>
+
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="mq"><div>ATEC Palmela · Todos os passos contam ·</div><div>ATEC Palmela · Todos os passos contam ·</div></div>
+  <small>Porque na ATEC Palmela acreditamos que o futuro se constrói com competência técnica, espírito de equipa e muita solidariedade. Iniciativa #TodosOsPassosContam, promovida pela Fundação Galp.</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/main.js"></script>
+<script src="js/google.js"></script>
+<script src="js/submeter.js"></script>
+</body>
+</html>
