@@ -2,7 +2,7 @@
 var rm=matchMedia("(prefers-reduced-motion:reduce)").matches,$=function(s){return [].slice.call(document.querySelectorAll(s))};
 
 /* Cliente Supabase partilhado por todas as páginas + botão do cabeçalho com o nome da turma */
-window.ATEC_SB=(window.supabase&&window.SUPABASE_URL&&window.SUPABASE_ANON_KEY&&window.SUPABASE_ANON_KEY.indexOf("COLA")!==0)?window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY):null;
+window.ATEC_SB=(window.supabase&&window.SUPABASE_URL&&window.SUPABASE_ANON_KEY&&window.SUPABASE_URL.indexOf("O-TEU-PROJETO")<0&&window.SUPABASE_ANON_KEY.indexOf("COLA")!==0)?window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY):null;
 var hb=document.querySelector("header>.btn");
 if(hb&&window.ATEC_SB)window.ATEC_SB.auth.getSession().then(function(r){
   var s=r.data&&r.data.session;if(!s)return;
@@ -117,7 +117,7 @@ if(auth){
 
   function checkCode(c){
     if(Date.now()<lockUntil)return Promise.resolve("lock");
-    if(!sb)return Promise.resolve("nosupport");
+    if(!sb){rpcErr=window.supabase?"preenche o URL e a anon key em js/supabase-config.js":"a biblioteca do Supabase não carregou";return Promise.resolve("nosupport")}
     return sb.rpc("check_access_code",{code:c.trim().toUpperCase()}).then(function(res){
       if(res.error){rpcErr=res.error.message||"";console.error(res.error);return "nosupport"}
       if(res.data===true){fails=0;return "ok"}
