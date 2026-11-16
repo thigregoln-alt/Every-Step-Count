@@ -34,6 +34,60 @@
     wrap.style.setProperty('--front-opacity',String(1-p));
     wrap.style.setProperty('--meal-opacity',String(Math.max(0,(p-.62)/.38)));
   }
+  function enter() {
+    if (motion.matches || scrollY > 40) return;
+    const ns = 'http://www.w3.org/2000/svg';
+    const animations = [];
+    const masks = [];
+    const groups = [];
+    let finished = false;
+    function clean() {
+      if (finished) return;
+      finished = true;
+      animations.forEach(a => a.cancel());
+      groups.forEach(g => g.removeAttribute('mask'));
+      masks.forEach(m => m.remove());
+      removeEventListener('scroll', interrupt);
+      motion.removeEventListener('change', clean);
+    }
+    function interrupt() { if (scrollY > 40) clean(); }
+    function begin() {
+      if (finished || motion.matches || scrollY > 40) { clean(); return; }
+      wrap.querySelectorAll('.lace-art').forEach((svg, index) => {
+        const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS(ns,'defs'),svg.firstChild);
+        const mask = document.createElementNS(ns,'mask');
+        mask.id = `lace-entry-${index}`;
+        mask.setAttribute('maskUnits','userSpaceOnUse');
+        mask.setAttribute('x','-100');mask.setAttribute('y','-100');
+        mask.setAttribute('width','1400');mask.setAttribute('height','720');
+        const reveal = document.createElementNS(ns,'path');
+        reveal.setAttribute('d',measure.getAttribute('d'));
+        reveal.setAttribute('fill','none');reveal.setAttribute('stroke','white');
+        reveal.setAttribute('stroke-width','40');reveal.setAttribute('stroke-linecap','round');
+        const length = measure.getTotalLength();
+        reveal.style.strokeDasharray = `${length} ${length}`;
+        mask.append(reveal);defs.append(mask);masks.push(mask);
+        const group = svg.querySelector('g');group.setAttribute('mask',`url(#${mask.id})`);groups.push(group);
+        animations.push(reveal.animate([{strokeDashoffset:length},{strokeDashoffset:0}],{duration:1250,easing:'cubic-bezier(.45,0,.2,1)',fill:'both'}));
+      });
+      const items = [...wrap.querySelectorAll('.hero-kicker,.hero-word,h1 em,.hero-bottom,.lace-tip')];
+      items.forEach((node,i) => animations.push(node.animate(
+        [{opacity:0,translate:'0 22px'},{opacity:1,translate:'0 0'}],
+        {duration:650,delay:220+i*100,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'}
+      )));
+      Promise.all(animations.map(a=>a.finished.catch(()=>{}))).then(clean);
+      addEventListener('scroll',interrupt,{passive:true});
+      motion.addEventListener('change',clean);
+    }
+    // Wait for the page transition to reveal the hero, without delaying navigation.
+    const deadline = performance.now()+2400;
+    function ready() {
+      if(document.querySelector('#step-transition.active') && performance.now()<deadline) requestAnimationFrame(ready);
+      else begin();
+    }
+    requestAnimationFrame(ready);
+  }
   function schedule(){if(!queued){queued=true;requestAnimationFrame(update)}}
   addEventListener('scroll',schedule,{passive:true});addEventListener('resize',schedule);motion.addEventListener('change',schedule);update();
+  enter();
 })();
