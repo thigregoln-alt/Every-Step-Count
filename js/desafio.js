@@ -1,52 +1,93 @@
 (() => {
-  const scene=document.querySelector('.step-story');
-  if(!scene)return;
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  const short=matchMedia('(max-height:700px)');
-  const header=document.querySelector('header');
-  const copies=[...scene.querySelectorAll('.story-copy article')];
-  const chips=[scene.querySelector('.chip-left'),scene.querySelector('.chip-right')];
-  const value=scene.querySelector('.sum-value');
-  const label=scene.querySelector('.sum-label');
-  const detail=scene.querySelector('.sum-detail');
-  const destination=scene.querySelector('.submission-destination');
-  const format=new Intl.NumberFormat('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1});
-  const clamp=n=>Math.max(0,Math.min(1,n));
-  const ease=n=>{n=clamp(n);return n*n*(3-2*n)};
-  let top=85,pending=false;
-  const staticMode=()=>reduced.matches||short.matches;
-  function update(){
-    pending=false;
-    const p=staticMode()?1:clamp((top-scene.getBoundingClientRect().top)/Math.max(1,scene.offsetHeight-innerHeight+top));
-    const a=ease((p-.15)/.12),b=ease((p-.27)/.13),c=ease((p-.5)/.12),d=ease((p-.62)/.13);
-    const total=4.2+3.8*a+5*b+18*c+24*d;
-    const phase=p<.15?0:p<.5?1:p<.82?2:3;
-    value.textContent=format.format(total);
-    label.textContent=['O teu registo','A tua turma','ATEC Palmela','Contributo a submeter'][phase];
-    detail.textContent=['6 000 passos neste exemplo','4,2 + 3,8 + 5 km','13 + 18 + 24 km','Exemplo · 55 km reunidos'][phase];
+  const scene = document.querySelector('.step-story');
+  if (!scene) return;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const short = matchMedia('(max-height:620px)');
+  const header = document.querySelector('header');
+  const copies = [...scene.querySelectorAll('.story-copy article')];
+  const group = scene.querySelector('.story-shapes');
+  const controls = scene.querySelector('.story-controls');
+  const range = controls.querySelector('input');
+  const back = controls.querySelector('[data-story-back]');
+  const next = controls.querySelector('[data-story-next]');
+  const inner = scene.querySelector('.dish-inner');
+  const tools = scene.querySelector('.dish-tools');
+  const clamp = x => Math.max(0,Math.min(1,x));
+  const ease = x => {x=clamp(x);return x*x*(3-2*x)};
+  const mix = (a,b,t) => a+(b-a)*t;
+  let top=85, progress=0, queued=false;
+  const shapes = Array.from({length:12},(_,i)=>{
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    group.append(path);
+    // Each sole becomes a segment of the plate. Equal point counts keep the morph continuous.
+    const sole=[],rim=[];
+    for(let j=0;j<24;j++){
+      const a=j/24*Math.PI*2;
+      sole.push([Math.cos(a)*(25+7*Math.sin(a)),Math.sin(a)*54]);
+      const outer=j<12;
+      const q=outer?j/11:(23-j)/11;
+      const theta=(i+q)/12*Math.PI*2-Math.PI/2;
+      const r=outer?185:169;
+      rim.push([300+Math.cos(theta)*r,300+Math.sin(theta)*r]);
+    }
+    return {path,sole,rim};
+  });
+  function isStatic(){return reduced.matches||short.matches}
+  function distance(){return Math.max(1,scene.offsetHeight-(innerHeight-top))}
+  function draw(p){
+    const gather=ease(p*2), dish=ease((p-.48)/.52);
+    shapes.forEach(({path,sole,rim},i)=>{
+      const x0=i%2?335:255,y0=i%2?335:250;
+      const x1=135+(i%4)*110,y1=165+Math.floor(i/4)*130;
+      const x=mix(x0,x1,gather),y=mix(y0,y1,gather);
+      const angle=mix(i%2?.2:-.2,(i%2?.15:-.15),gather);
+      const d=sole.map(([sx,sy],j)=>{
+        const px=x+sx*Math.cos(angle)-sy*Math.sin(angle);
+        const py=y+sx*Math.sin(angle)+sy*Math.cos(angle);
+        return `${j?'L':'M'}${mix(px,rim[j][0],dish).toFixed(2)} ${mix(py,rim[j][1],dish).toFixed(2)}`;
+      }).join('')+'Z';
+      path.setAttribute('d',d);
+      path.style.opacity=i<2?1:ease(gather*1.7-i*.045);
+    });
+    inner.style.opacity=ease((p-.7)/.3)*.5;
+    tools.style.opacity=ease((p-.8)/.2);
+    const active=p<.25?0:p<.75?1:2;
     copies.forEach((copy,i)=>{
-      const visible=staticMode()||i===phase;
-      copy.style.opacity=visible?1:0;copy.style.visibility=visible?'visible':'hidden';
-      if(staticMode())copy.removeAttribute('aria-hidden');else copy.setAttribute('aria-hidden',String(!visible));
+      const delta=p*2-i;
+      const opacity=clamp(1-Math.abs(delta)*1.8);
+      copy.style.opacity=isStatic()?1:opacity;
+      copy.style.transform=isStatic()?'none':`translateY(${-delta*65}px)`;
+      copy.style.visibility=isStatic()||opacity>.001?'visible':'hidden';
+      if(isStatic())copy.removeAttribute('aria-hidden');else copy.setAttribute('aria-hidden',String(i!==active));
     });
-    chips.forEach((chip,i)=>{
-      const team=p>=.5;
-      chip.querySelector('span').textContent=team?['Turma B','Turma C'][i]:['Colega A','Colega B'][i];
-      chip.querySelector('strong').innerHTML=team?['+ 18 <small>km</small>','+ 24 <small>km</small>'][i]:['+ 3,8 <small>km</small>','+ 5 <small>km</small>'][i];
-      const start=team?[.5,.62][i]:[.15,.27][i];
-      const t=clamp((p-start)/.12);
-      const opacity=(p<start||phase===3||staticMode())?0:Math.min(1,t*6)*(1-ease((t-.65)/.35));
-      chip.style.opacity=opacity;
-      chip.style.transform=`translate(${(i?-1:1)*t*45}px,${t*110}px) scale(${1-t*.25})`;
-    });
-    const sent=ease((p-.82)/.18);
-    scene.style.setProperty('--total-y',`${-sent*28}px`);
-    scene.style.setProperty('--line-opacity',phase===1||phase===2?.35:0);
-    destination.style.opacity=sent;
-    destination.style.transform=`translateY(${20*(1-sent)}px)`;
+    range.value=Math.round(p*1000);
+    range.style.setProperty('--scrub',`${p*100}%`);
+    range.setAttribute('aria-valuetext',['O teu passo','A força da turma','A refeição'][active]);
+    back.disabled=p<.01;next.disabled=p>.99;
+    scene.style.backgroundColor=`rgb(${Math.round(mix(191,246,dish))},${Math.round(mix(210,247,dish))},${Math.round(mix(187,243,dish))})`;
   }
-  function schedule(){if(!pending){pending=true;requestAnimationFrame(update)}}
-  function layout(){top=Math.ceil(header?.getBoundingClientRect().height||85);scene.style.setProperty('--story-top',`${top}px`);scene.classList.toggle('story-active',!staticMode());schedule()}
+  function update(){
+    queued=false;
+    progress=isStatic()?1:clamp((top-scene.getBoundingClientRect().top)/distance());
+    draw(progress);
+  }
+  function schedule(){if(!queued){queued=true;requestAnimationFrame(update)}}
+  function layout(){
+    top=Math.ceil(header?.getBoundingClientRect().height||85);
+    scene.style.setProperty('--story-top',`${top}px`);
+    scene.classList.toggle('story-active',!isStatic());
+    controls.hidden=isStatic();
+    schedule();
+  }
+  function seek(value,smooth){
+    if(isStatic())return;
+    const y=scrollY+scene.getBoundingClientRect().top-top+clamp(value)*distance();
+    scrollTo({top:y,behavior:smooth?'smooth':'instant'});
+    if(!smooth){progress=clamp(value);draw(progress)}
+  }
+  range.addEventListener('input',()=>seek(Number(range.value)/1000,false));
+  back.addEventListener('click',()=>seek(progress>.52?.5:0,true));
+  next.addEventListener('click',()=>seek(progress<.48?.5:1,true));
   addEventListener('scroll',schedule,{passive:true});addEventListener('resize',layout);
   reduced.addEventListener('change',layout);short.addEventListener('change',layout);
   if(header&&typeof ResizeObserver!=='undefined')new ResizeObserver(layout).observe(header);
