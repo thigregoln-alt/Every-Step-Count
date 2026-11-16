@@ -1,6 +1,16 @@
 (function(){
 var rm=matchMedia("(prefers-reduced-motion:reduce)").matches,$=function(s){return [].slice.call(document.querySelectorAll(s))};
 
+/* Cliente Supabase partilhado por todas as páginas + botão do cabeçalho com o nome da turma */
+window.ATEC_SB=(window.supabase&&window.SUPABASE_URL&&window.SUPABASE_ANON_KEY&&window.SUPABASE_ANON_KEY.indexOf("COLA")!==0)?window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY):null;
+var hb=document.querySelector("header>.btn");
+if(hb&&window.ATEC_SB)window.ATEC_SB.auth.getSession().then(function(r){
+  var s=r.data&&r.data.session;if(!s)return;
+  var m=s.user.user_metadata||{},nm=String(m["class"]||m.name||(s.user.email||"").split("@")[0]||"").trim();
+  if(!nm)return;
+  hb.textContent="";hb.dataset.user=nm;hb.setAttribute("aria-label",nm);hb.href="submeter.html";
+});
+
 /* Contagem decrescente (só existe na página inicial) */
 var T=function(s){return window.t?window.t(s):s};
 var cd=document.getElementById("cd");
@@ -93,9 +103,28 @@ if(route){
 var auth=document.getElementById("auth");
 if(auth){
   var forms=$(".af");
-  var show=function(name){forms.forEach(function(f){f.hidden=f.id!=="f-"+name})};
+  var accessCode="";try{accessCode=sessionStorage.getItem("acesso")||""}catch(e){}
+  var unlocked=!!accessCode;
+  var sb=window.ATEC_SB;
+  /* Já tem sessão iniciada: não volta a pedir código nem login */
+  if(sb)sb.auth.getSession().then(function(r){if(r.data&&r.data.session)location.replace("submeter.html")});
+  var show=function(name){if(!unlocked)name="gate";forms.forEach(function(f){f.hidden=f.id!=="f-"+name})};
   $("[data-go]").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();show(a.dataset.go);history.replaceState(null,"","#"+a.dataset.go)})});
   show(location.hash==="#signup"?"signup":"login");
+  /* Código de acesso: verificado no servidor (função check_access_code no Supabase). Não existe neste ficheiro. */
+
+  var fails=0,lockUntil=0,rpcErr="";
+
+  function checkCode(c){
+    if(Date.now()<lockUntil)return Promise.resolve("lock");
+    if(!sb)return Promise.resolve("nosupport");
+    return sb.rpc("check_access_code",{code:c.trim().toUpperCase()}).then(function(res){
+      if(res.error){rpcErr=res.error.message||"";console.error(res.error);return "nosupport"}
+      if(res.data===true){fails=0;return "ok"}
+      if(++fails>=5){fails=0;lockUntil=Date.now()+6e4;return "lock"}
+      return "bad";
+    });
+  }
   forms.forEach(function(f){
     f.addEventListener("submit",function(e){
       e.preventDefault();
@@ -107,8 +136,40 @@ if(auth){
       msg.classList.remove("ok");
       if(bad){msg.textContent=T("Verifica os campos assinalados.");bad.focus();return}
       /* TODO: ligar ao backend de autenticação */
-      msg.classList.add("ok");
-      msg.textContent=T(f.id==="f-login"?"Login válido (falta ligar ao servidor).":"Conta criada (falta ligar ao servidor).");
+      if(f.id==="f-gate"){
+        var ci=f.elements.access;
+        checkCode(ci.value).then(function(r){
+          if(r!=="ok"){
+            ci.classList.add("err");ci.focus();
+            msg.textContent=T(r==="lock"?"Demasiadas tentativas. Tenta novamente dentro de 1 minuto.":r==="nosupport"?"Não foi possível validar o código. Tenta novamente.":"Código de acesso inválido.");
+            if(r==="nosupport"&&rpcErr)msg.textContent+=" ("+rpcErr+")";
+            return;
+          }
+          accessCode=ci.value.trim().toUpperCase();unlocked=true;try{sessionStorage.setItem("acesso",accessCode)}catch(x){}
+          msg.textContent="";show(location.hash==="#signup"?"signup":"login");
+          var nf=document.querySelector(".af:not([hidden]) input");if(nf)nf.focus();
+        });
+        return;
+      }
+      if(!sb){msg.textContent=T("Não foi possível ligar ao servidor.");return}
+      var fd=function(n){return f.elements[n].value.trim()},btn=f.querySelector("button[type=submit]");
+      btn.disabled=true;
+      var req=f.id==="f-login"
+        ?sb.auth.signInWithPassword({email:fd("email"),password:f.elements.password.value})
+        :sb.auth.signUp({email:fd("email"),password:f.elements.password.value,options:{data:{name:fd("name"),"class":fd("class"),access_code:accessCode}}});
+      req.then(function(r){
+        btn.disabled=false;
+        if(r.error){
+          var m=(r.error.message||"").toLowerCase();
+          msg.textContent=T(m.indexOf("invalid login")>=0?"Email ou palavra-passe incorretos.":m.indexOf("not confirmed")>=0?"Confirma o teu email antes de entrar.":m.indexOf("already")>=0?"Já existe uma conta com este email.":m.indexOf("database error")>=0?"Código de acesso inválido.":"Não foi possível concluir. Tenta novamente.");
+          if(!/invalid login|not confirmed|already|database error/.test(m)){console.error(r.error);msg.textContent+=" ("+r.error.message+")"}
+          return;
+        }
+        msg.classList.add("ok");
+        if(f.id==="f-signup"&&!r.data.session){msg.textContent=T("Conta criada. Verifica o teu email para confirmar.");return}
+        msg.textContent=T(f.id==="f-login"?"Sessão iniciada.":"Conta criada com sucesso.");
+        setTimeout(function(){location.href="submeter.html"},900);
+      },function(){btn.disabled=false;msg.textContent=T("Não foi possível ligar ao servidor.")});
     });
   });
 }

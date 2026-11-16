@@ -146,3 +146,53 @@ header .btn[aria-current="page"]{outline:3px solid var(--amber);outline-offset:3
 .lang-menu button:hover{background:var(--bg)}
 .lang-menu button[aria-selected="true"]{background:var(--sage)}
 @media(max-width:760px){.lang-menu{right:auto;left:0}}
+
+/* submeter pontuação: caixa de upload de prints */
+.up .auth-card{width:min(100%,640px)}
+.up-need .hint{margin:10px 0 24px}
+.af .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.af .lbl{font-weight:600;font-size:.9rem;margin-bottom:6px}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;min-height:210px;padding:28px 20px;border:2px dashed rgba(31,61,50,.35);border-radius:22px;background:var(--bg);cursor:pointer;transition:border-color .2s,background .2s,transform .2s}
+.drop:hover,.drop.over{border-color:var(--forest);background:#fff}
+.drop.over{transform:scale(1.01)}
+.drop:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+.drop svg{width:44px;height:44px;color:var(--forest);margin-bottom:6px}
+.drop strong{font-size:1.1rem;font-weight:800;letter-spacing:-.02em}
+.drop span{font-size:.92rem;opacity:.75}
+.drop small{font-size:.8rem;opacity:.55;margin-top:6px}
+.af .drop input{display:none}
+.thumbs{list-style:none;margin:16px 0 20px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.thumbs:empty{display:none}
+.thumbs li{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:var(--bg)}
+.thumbs img{display:block;width:100%;height:100%;object-fit:cover}
+.thumbs button{position:absolute;top:6px;right:6px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(19,32,27,.78);color:#fff;font:600 1.15rem/1 var(--f);cursor:pointer;display:grid;place-items:center;transition:background .2s}
+.thumbs button:hover,.thumbs button:focus-visible{background:#B3402A}
+.af .btn:disabled{opacity:.6;cursor:progress;transform:none}
+.af .drop+.msg,.thumbs+.msg{margin-top:12px}
+@media(max-width:520px){.af .row2{grid-template-columns:1fr}}
+
+/* submeter: campo de km sem setas */
+.af input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.af input[type=number]::-webkit-outer-spin-button,.af input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+/* submeter: entrada imersiva (a animação só arranca depois da transição de página) */
+.up{overflow:hidden}
+.up::before,.up::after{content:"";position:absolute;z-index:0;border-radius:50%;filter:blur(70px);pointer-events:none;animation:dr 12s ease-in-out infinite alternate;transition:translate .8s cubic-bezier(.2,.8,.2,1)}
+.up::before{width:46vmax;height:46vmax;left:-12vmax;top:8%;background:var(--sage);opacity:.7;translate:calc(var(--mx,0)*1px) calc(var(--my,0)*1px)}
+.up::after{width:40vmax;height:40vmax;right:-10vmax;bottom:-6%;background:var(--mist);opacity:.8;animation-delay:-5s;translate:calc(var(--mx,0)*-1px) calc(var(--my,0)*-1px)}
+.up:not(.go) .auth-card,.up:not(.go) :where(.af,.up-need)>*{opacity:0}
+.up.go .auth-card{animation:cardin 1.1s cubic-bezier(.2,.8,.2,1) backwards}
+.up.go :where(.af,.up-need)>*{animation:kin .85s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(.4s + var(--i,0)*.09s)}
+@keyframes cardin{from{opacity:0;clip-path:circle(0% at 50% 0%);transform:translateY(60px) scale(.92)}to{opacity:1;clip-path:circle(150% at 50% 0%);transform:none}}
+@keyframes kin{from{opacity:0;transform:translateY(28px);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+.drop svg{animation:bob 2.6s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-6px)}}
+.af .tag[hidden]{display:none}
+.af .out{display:block;margin:16px auto 0;background:none;border:0;padding:.3em .6em;font:600 .92rem var(--f);color:var(--ink);opacity:.6;text-decoration:underline;text-underline-offset:4px;cursor:pointer;transition:opacity .2s}
+.af .out:hover,.af .out:focus-visible{opacity:1}
+@media(prefers-reduced-motion:reduce){.up:not(.go) .auth-card,.up:not(.go) :where(.af,.up-need)>*{opacity:1}.up.go .auth-card,.up.go :where(.af,.up-need)>*,.up::before,.up::after,.drop svg{animation:none}}
+
+/* cabeçalho: botão com o nome da turma quando há sessão iniciada */
+header .btn[data-user]{display:inline-flex;align-items:center;gap:.6em;max-width:min(46vw,240px)}
+header .btn[data-user]::before{content:"";flex:none;width:.6em;height:.6em;border-radius:50%;background:var(--amber);box-shadow:0 0 0 3px rgba(235,201,138,.35)}
+header .btn[data-user]::after{content:attr(data-user);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

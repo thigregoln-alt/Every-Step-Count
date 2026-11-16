@@ -15,7 +15,15 @@
 <main>
 <section class="pg auth" id="auth">
   <div class="auth-card">
-    <form id="f-login" class="af" novalidate>
+    <form id="f-gate" class="af" novalidate>
+      <h1>Acesso restrito.</h1>
+      <p class="hint">Introduz o código de acesso da ATEC Palmela para continuar.</p>
+      <label>Código de acesso<input type="password" name="access" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Fornecido pela organização" required></label>
+      <p class="msg" role="alert" aria-live="polite"></p>
+      <button class="btn b1" type="submit">Continuar</button>
+    </form>
+
+    <form id="f-login" class="af" novalidate hidden>
       <h1>Bem-vindo de volta.</h1>
       <p class="hint">Entra para submeter os km da tua turma.</p>
       <label>Email<input type="email" name="email" autocomplete="email" placeholder="nome@exemplo.pt" required></label>
@@ -45,6 +53,8 @@
   <small>Porque na ATEC Palmela acreditamos que o futuro se constrói com competência técnica, espírito de equipa e muita solidariedade. Iniciativa #TodosOsPassosContam, promovida pela Fundação Galp.</small>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/main.js"></script>
 </body>
