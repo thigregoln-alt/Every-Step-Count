@@ -1,5 +1,4 @@
-# Configuração local do Supabase (gerada no deploy a partir dos GitHub Secrets)
-js/supabase-config.js
+# js/supabase-config.js fica no repositório: só tem o endereço e a chave anon (pública; quem protege os dados são as regras RLS)
 
 # Contém o código de acesso em texto: nunca vai para o GitHub
 supabase/setup.sql
