@@ -11,7 +11,7 @@
 //   6. se todas forem válidas, confere os números e grava na tabela "registos"
 //      (upsert: o mesmo formando no mesmo dia não conta a dobrar)
 //
-// A chave do Gemini NUNCA está no site: fica no Supabase como segredo GEMINI_API_KEY.
+// A chave do Gemini NUNCA está no site: fica no Supabase como segredo GOOGLE_API_KEY (ou GEMINI_API_KEY).
 // O modelo pode ser mudado sem mexer no código com o segredo GEMINI_MODEL.
 //
 // Fluxo: site -> Supabase (Storage + esta função) -> Gemini -> esta função -> tabela registos -> site
@@ -186,8 +186,9 @@ async function apagarFotos(caminhos: string[]) {
 // Chamada ao Gemini (uma foto)
 //------------------------------------------------------------
 async function perguntarGemini(imagemBase64: string, tipo: string) {
-  const chave = Deno.env.get("GEMINI_API_KEY");
-  if (!chave) throw new Error("Falta o segredo GEMINI_API_KEY no Supabase.");
+  // a chave da Google do projeto (já usada pelo grupo) ou uma só para o Gemini
+  const chave = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
+  if (!chave) throw new Error("Falta o segredo GOOGLE_API_KEY no Supabase.");
   const modelo = Deno.env.get("GEMINI_MODEL") || "gemini-3.8-flash";
 
   const r = await fetch(
