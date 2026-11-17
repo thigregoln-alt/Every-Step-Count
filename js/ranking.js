@@ -5,62 +5,77 @@
 var T=function(s){return window.t?window.t(s):s};
 
 /* ---------- DADOS ----------
-   Por agora são DADOS DE TESTE (nomes e turmas inventados), só para ver as páginas a funcionar.
+   Os registos vêm da tabela "registos" do Supabase (ver supabase/registos.sql).
    Cada linha é um registo: formando, turma, passos e km (os km vêm no print do StepUp).
-   Quando a base de dados tiver os registos lidos dos prints, basta encher a lista "registos"
-   a partir do Supabase e pôr DADOS_DE_TESTE a false. O resto do ficheiro não muda. */
-var DADOS_DE_TESTE=true;
-var registos=[
-  {nome:"Tomás Ferreira", turma:"PIPL0925", passos:74091, km:56.5},
-  {nome:"Duarte Costa", turma:"PIPL0925", passos:81326, km:58.5},
-  {nome:"Beatriz Mendes", turma:"PIPL0925", passos:61799, km:45.6},
-  {nome:"Hugo Nunes", turma:"PIPL0925", passos:64446, km:47.6},
-  {nome:"Rita Fonseca", turma:"PIPL0924", passos:42910, km:30.6},
-  {nome:"Lúcia Correia", turma:"PIPL0924", passos:68643, km:48.0},
-  {nome:"Nuno Gomes", turma:"PIPL0924", passos:80309, km:60.8},
-  {nome:"Lara Dias", turma:"PIPL0924", passos:34896, km:25.6},
-  {nome:"Jorge Dias", turma:"TPSI0925", passos:22085, km:16.8},
-  {nome:"Alice Mendes", turma:"TPSI0925", passos:76640, km:56.3},
-  {nome:"Vera Sousa", turma:"TPSI0925", passos:78863, km:56.2},
-  {nome:"Olívia Teixeira", turma:"TPSI0925", passos:25011, km:17.0},
-  {nome:"Sara Moreira", turma:"TPSI0925", passos:24607, km:17.2},
-  {nome:"Carla Cardoso", turma:"TPSI0924", passos:77187, km:53.3},
-  {nome:"Ana Gomes", turma:"TPSI0924", passos:57585, km:42.3},
-  {nome:"Teresa Teixeira", turma:"TPSI0924", passos:54321, km:38.5},
-  {nome:"Fábio Moreira", turma:"TPSI0924", passos:24027, km:16.7},
-  {nome:"Joana Matos", turma:"GRSI0925", passos:43350, km:31.6},
-  {nome:"Edgar Moreira", turma:"GRSI0925", passos:26221, km:19.0},
-  {nome:"Mariana Mendes", turma:"GRSI0925", passos:46417, km:32.1},
-  {nome:"Miguel Mendes", turma:"GRSI0925", passos:46590, km:33.9},
-  {nome:"Válter Antunes", turma:"CISEG0925", passos:56929, km:42.9},
-  {nome:"Luís Almeida", turma:"CISEG0925", passos:33429, km:23.6},
-  {nome:"Íris Martins", turma:"CISEG0925", passos:67675, km:50.8},
-  {nome:"Daniela Gomes", turma:"CISEG0925", passos:18418, km:13.4},
-  {nome:"Rui Vieira", turma:"MECA0925", passos:75940, km:51.6},
-  {nome:"Simão Fonseca", turma:"MECA0925", passos:70779, km:49.9},
-  {nome:"Vasco Matos", turma:"MECA0925", passos:23558, km:16.1},
-  {nome:"Filipa Antunes", turma:"MECA0925", passos:75250, km:54.9},
-  {nome:"Diogo Ferreira", turma:"ELET0924", passos:67381, km:49.1},
-  {nome:"Noémia Ribeiro", turma:"ELET0924", passos:24826, km:18.0},
-  {nome:"Helena Ferreira", turma:"ELET0924", passos:52876, km:40.4},
-  {nome:"Ricardo Martins", turma:"ELET0924", passos:76019, km:54.4},
-  {nome:"Bruno Sousa", turma:"ELET0924", passos:80803, km:61.6},
-  {nome:"Marta Vieira", turma:"AUTO0925", passos:56519, km:40.0},
-  {nome:"André Sousa", turma:"AUTO0925", passos:79646, km:57.5},
-  {nome:"Clara Ferreira", turma:"AUTO0925", passos:67959, km:49.0},
-  {nome:"Xavier Gomes", turma:"AUTO0925", passos:26718, km:20.3},
-  {nome:"Rafael Matos", turma:"SOLD0924", passos:45161, km:31.2},
-  {nome:"Gonçalo Almeida", turma:"SOLD0924", passos:70802, km:53.0},
-  {nome:"Sofia Correia", turma:"SOLD0924", passos:55018, km:38.6},
-  {nome:"Leonor Martins", turma:"SOLD0924", passos:72038, km:48.8},
-  {nome:"Inês Fonseca", turma:"LOGI0925", passos:44766, km:32.8},
-  {nome:"Tiago Almeida", turma:"LOGI0925", passos:54498, km:40.7},
-  {nome:"Samuel Mendes", turma:"LOGI0925", passos:69442, km:49.1},
-  {nome:"Paulo Pinto", turma:"MULT0925", passos:59094, km:40.9},
-  {nome:"Pedro Ribeiro", turma:"MULT0925", passos:71063, km:52.1},
-  {nome:"Catarina Martins", turma:"MULT0925", passos:20835, km:15.0},
-  {nome:"Tomás Ribeiro", turma:"MULT0925", passos:79944, km:57.9}
-];
+   Não há dados inventados: se a tabela estiver vazia, as páginas dizem "Ainda não há dados." */
+var registos=[];
+var estado="a carregar"; /* "a carregar" -> "pronto" ou "erro" */
+var pedido=0;            /* número do último pedido feito ao Supabase (ver carregar) */
+
+/* O Supabase devolve no máximo 1000 linhas de cada vez: pede-se por partes até ter todas.
+   "count" é o total de linhas da tabela. O "order" serve para as partes não repetirem nem saltarem linhas. */
+function buscar(sb,lista){
+  return sb.from("registos").select("nome,turma,passos,km",{count:"exact"}).order("id").range(lista.length,lista.length+999).then(function(r){
+    if(r.error)throw r.error;
+    r.data.forEach(function(l){
+      lista.push({nome:l.nome,turma:l.turma,passos:Number(l.passos)||0,km:Number(l.km)||0});
+    });
+    if(r.data.length&&lista.length<r.count)return buscar(sb,lista);
+  });
+}
+
+/* Vai buscar todos os registos e redesenha a página.
+   Os dados novos vão para uma lista à parte: a página continua a mostrar os antigos até os novos chegarem. */
+function carregar(){
+  var sb=window.ATEC_SB,novos=[],meu=++pedido;
+  if(!sb){estado="erro";desenhar();return}
+  buscar(sb,novos).then(function(){
+    if(meu!==pedido)return; /* entretanto já foi feito um pedido mais recente: este já não interessa */
+    registos=novos;
+    estado="pronto";
+    desenhar();
+  },function(erro){
+    console.error(erro);
+    /* se já havia números no ecrã, ficam lá; o erro só aparece se ainda não havia nada */
+    if(meu===pedido&&estado!=="pronto"){estado="erro";desenhar()}
+  });
+}
+
+/* ---------- ATUALIZAR SOZINHO ----------
+   Quando os registos de um print entram na base de dados, o Supabase (Realtime) avisa todas as
+   páginas que estão abertas, e cada uma vai buscar os dados outra vez. Ninguém precisa de recarregar. */
+var espera=null,jaLigou=false;
+function ouvirMudancas(){
+  var sb=window.ATEC_SB;
+  if(!sb)return;
+  sb.channel("ranking")
+    .on("postgres_changes",{event:"*",schema:"public",table:"registos"},function(){
+      /* um print dá muitos registos de uma vez: espera-se 1 segundo depois do último aviso para buscar só uma vez */
+      clearTimeout(espera);
+      espera=setTimeout(carregar,1000);
+    })
+    .subscribe(function(situacao){
+      if(situacao!=="SUBSCRIBED")return;
+      /* se a ligação caiu e voltou (telemóvel bloqueado, Wi-Fi a falhar), podem ter-se perdido avisos:
+         busca-se tudo outra vez. Da primeira vez não é preciso, o carregar() já foi chamado. */
+      if(jaLigou)carregar();
+      jaLigou=true;
+    });
+}
+
+/* Frase que fica no lugar da lista ou do gráfico quando não há nada para mostrar */
+function avisoVazio(){
+  if(estado==="a carregar")return cria("p","vazio espera",T("A carregar…"));
+  if(estado==="erro")return cria("p","vazio",T("Não foi possível carregar os dados."));
+  return cria("p","vazio",T("Ainda não há dados."));
+}
+
+/* Número grande dos quadrados: antes de os dados chegarem não se mostra um 0, que podia parecer verdadeiro */
+function grande(n){
+  if(estado==="a carregar")return "…";
+  if(estado==="erro")return "–";
+  return milhares(n);
+}
 
 /* ---------- SOMAS ---------- */
 function porPassos(a,b){return b.passos-a.passos}
@@ -136,8 +151,12 @@ function topoDoEixo(maior){
 }
 
 function desenharGrafico(caixa,turmas){
+  /* antes de apagar, guarda-se a altura que cada barra tinha e a posição do scroll para o lado:
+     assim, quando chegam dados novos, as barras crescem a partir de onde estavam e a janela não salta */
+  var antes={},janelaAntiga=caixa.querySelector(".barras-janela"),lado=janelaAntiga?janelaAntiga.scrollLeft:0;
+  [].slice.call(caixa.querySelectorAll(".barra")).forEach(function(b){antes[b.dataset.turma]=b.dataset.p});
   caixa.textContent="";
-  if(!turmas.length){caixa.appendChild(cria("p","vazio",T("Ainda não há dados.")));return}
+  if(!turmas.length){caixa.appendChild(avisoVazio());return}
   var topo=topoDoEixo(turmas[0].passos);
 
   /* eixo da esquerda: passos, de 0 até ao topo */
@@ -153,8 +172,9 @@ function desenharGrafico(caixa,turmas){
   janela.setAttribute("aria-label",T("Passos por turma"));
   turmas.forEach(function(t){
     var barra=cria("li","barra"),area=cria("div","barra-area");
-    barra.style.setProperty("--p",primeiraVez?0:t.passos/topo);
+    barra.style.setProperty("--p",antes[t.turma]||0);
     barra.dataset.p=t.passos/topo;
+    barra.dataset.turma=t.turma;
     area.appendChild(cria("strong","barra-nome",t.turma));
     area.appendChild(cria("i","barra-cor"));
     barra.appendChild(area);
@@ -166,12 +186,16 @@ function desenharGrafico(caixa,turmas){
   caixa.appendChild(eixo);
   caixa.appendChild(janela);
 
-  /* as barras começam em zero e sobem até à altura certa (como as barras .rk do main.js) */
-  if(primeiraVez)setTimeout(function(){
+  janela.scrollLeft=lado;
+
+  /* as barras sobem até à altura certa (como as barras .rk do main.js).
+     Na primeira vez começam em zero e entram uma a seguir à outra; depois disso só se mexem as que mudaram. */
+  var primeira=primeiraVez;
+  setTimeout(function(){
     [].slice.call(caixa.querySelectorAll(".barra")).forEach(function(b,i){
-      setTimeout(function(){b.style.setProperty("--p",b.dataset.p)},Math.min(i,12)*70);
+      setTimeout(function(){b.style.setProperty("--p",b.dataset.p)},primeira?Math.min(i,12)*70:0);
     });
-  },700);
+  },primeira?700:50);
 }
 
 /* ---------- LISTA DE FORMANDOS ---------- */
@@ -179,7 +203,7 @@ function desenharGrafico(caixa,turmas){
    comTurma=false: # · Nome · Passos · Distância          (dentro de uma turma) */
 function desenharLista(caixa,formandos,comTurma){
   caixa.textContent="";
-  if(!formandos.length){caixa.appendChild(cria("p","vazio",T("Ainda não há dados.")));return}
+  if(!formandos.length){caixa.appendChild(avisoVazio());return}
   var tabela=cria("table","lista"+(primeiraVez?" entra":"")),cabeca=cria("thead"),corpo=cria("tbody"),linha=cria("tr");
   linha.appendChild(cria("th","pos","#"));
   linha.appendChild(cria("th","",T("Nome")));
@@ -220,9 +244,9 @@ function desenharEquipa(formandos,turmas){
   caixa.textContent="";
 
   if(!escolhida){
-    quadrado.dataset.b=turmas.length;
+    quadrado.dataset.b=grande(turmas.length);
     quadrado.dataset.s=T("turmas");
-    if(!turmas.length){caixa.appendChild(cria("p","vazio",T("Ainda não há dados.")));return}
+    if(!turmas.length){caixa.appendChild(avisoVazio());return}
     var lista=cria("div","turmas"+(primeiraVez?" entra":""));
     turmas.slice().sort(function(a,b){return a.turma<b.turma?-1:1}).forEach(function(t,i){
       var a=cria("a","row");
@@ -242,15 +266,11 @@ function desenharEquipa(formandos,turmas){
   volta.href="ranking-equipa.html";
   volta.textContent=T("Todas as turmas");
   titulo.textContent=escolhida;
-  if(!turma){
-    intro.textContent=T("Turma não encontrada.");
-    quadrado.dataset.b="0";
-    quadrado.dataset.s="km · "+T("total da turma");
-    return;
-  }
-  intro.textContent=T("Quem andou mais nesta turma, de 16 a 22 de novembro.");
-  quadrado.dataset.b=milhares(turma.km);
+  quadrado.dataset.b=grande(turma?turma.km:0);
   quadrado.dataset.s="km · "+T("total da turma");
+  /* só se pode dizer que a turma não existe depois de os dados chegarem */
+  if(!turma&&estado==="pronto"){intro.textContent=T("Turma não encontrada.");return}
+  intro.textContent=T("Quem andou mais nesta turma, de 16 a 22 de novembro.");
   desenharLista(caixa,formandos.filter(function(f){return f.turma===escolhida}),false);
 }
 
@@ -264,7 +284,7 @@ function desenhar(){
   /* classificacao.html: total real da ATEC Palmela */
   el=document.getElementById("total-atec");
   if(el){
-    el.dataset.b=milhares(km);
+    el.dataset.b=grande(km);
     el.dataset.s="km · "+T("total acumulado pela ATEC Palmela");
   }
 
@@ -273,7 +293,7 @@ function desenhar(){
   if(el){
     desenharGrafico(el,turmas);
     el=document.getElementById("turmas-quadrado");
-    el.dataset.b=turmas.length;
+    el.dataset.b=grande(turmas.length);
     el.dataset.s=T("turmas em competição");
   }
 
@@ -282,30 +302,25 @@ function desenhar(){
   if(el){
     desenharLista(el,formandos,true);
     el=document.getElementById("formandos-quadrado");
-    el.dataset.b=formandos.length;
+    el.dataset.b=grande(formandos.length);
     el.dataset.s=T("formandos a caminhar");
   }
 
   /* ranking-equipa.html */
   if(document.getElementById("equipa-lista"))desenharEquipa(formandos,turmas);
 
-  /* aviso bem visível enquanto os números não forem reais (fica logo por baixo do título) */
-  el=document.getElementById("aviso-teste");
-  if(DADOS_DE_TESTE&&!el){
-    var topo=document.querySelector("main .top");
-    if(topo){
-      el=cria("p","tag");
-      el.id="aviso-teste";
-      el.style.background="var(--amber)";
-      topo.parentNode.insertBefore(el,topo.nextSibling);
-    }
-  }
-  if(el)el.textContent=T("Dados de teste");
+  /* a animação de entrada fica guardada para quando os dados reais aparecem */
+  if(estado==="pronto")primeiraVez=false;
 
-  primeiraVez=false;
+  /* avisa o main.js para voltar a ler os quadrados (.slot), que podem ter números novos */
+  window.dispatchEvent(new Event("dadoschange"));
 }
 
+/* Primeiro desenha-se a página sem dados ("A carregar…").
+   O cliente do Supabase (window.ATEC_SB) é criado no main.js, que é carregado depois deste ficheiro:
+   por isso só se vão buscar os dados quando a página acabar de carregar. */
 desenhar();
+addEventListener("DOMContentLoaded",function(){carregar();ouvirMudancas()});
 /* Ao mudar de idioma: refaz os textos e os números (o main.js relê os quadrados logo a seguir) */
 addEventListener("langchange",desenhar);
 })();
