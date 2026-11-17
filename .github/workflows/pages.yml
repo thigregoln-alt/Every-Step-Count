@@ -23,12 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Gera js/supabase-config.js a partir dos Secrets (não fica no repositório)
+      # Usa o js/supabase-config.js do repositório. Só o gera a partir dos Secrets se ele não existir.
+      # (O GitHub Pages também publica o repositório tal como está, por isso o ficheiro tem de estar lá.)
       - name: Gerar configuração do Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
+          if [ -f js/supabase-config.js ]; then echo "Usa o js/supabase-config.js do repositório"; exit 0; fi
           test -n "$SUPABASE_URL" && test -n "$SUPABASE_ANON_KEY" || { echo "Faltam os secrets SUPABASE_URL / SUPABASE_ANON_KEY"; exit 1; }
           printf 'window.SUPABASE_URL = "%s";\nwindow.SUPABASE_ANON_KEY = "%s";\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > js/supabase-config.js
 

@@ -28,5 +28,8 @@ create policy "ver os proprios prints" on storage.objects
   for select to authenticated
   using (bucket_id = 'prints' and (storage.foldername(name))[1] = (select auth.uid())::text);
 
--- 4. Atualizar a cache da API
+-- 4. O site já não envia km na submissão (os km de cada formando vão para a tabela registos)
+alter table public.submissoes alter column km set default 0;
+
+-- 5. Atualizar a cache da API
 notify pgrst, 'reload schema';
