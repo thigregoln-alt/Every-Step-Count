@@ -7,12 +7,15 @@
 //   2. vai buscar cada print ao Storage
 //   3. manda cada print ao Gemini, com um esquema que diz exatamente que campos devolver
 //   4. o Gemini diz se a foto é um print do StepUp ou outra coisa qualquer
-//   5. se alguma foto não for válida, NÃO grava nada e diz ao site qual foi
+//   5. se alguma foto não for válida, NÃO grava nada, apaga as fotos do Storage e diz ao site qual foi
 //   6. se todas forem válidas, confere os números e grava na tabela "registos"
 //      (upsert: o mesmo formando no mesmo dia não conta a dobrar)
 //
 // A chave do Gemini NUNCA está no site: fica no Supabase como segredo GEMINI_API_KEY.
 // O modelo pode ser mudado sem mexer no código com o segredo GEMINI_MODEL.
+//
+// Fluxo: site -> Supabase (Storage + esta função) -> Gemini -> esta função -> tabela registos -> site
+// O site nunca fala com o Gemini.
 // ============================================================
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -77,7 +80,7 @@ const ESQUEMA = {
 
 const PEDIDO =
   "Recebes uma imagem enviada por um delegado de turma. Deveria ser um print da app StepUp " +
-  "com o ranking de passos de um grupo (turma). " +
+  "com os passos do dia de cada pessoa de uma turma. " +
   "Primeiro diz que tipo de imagem é. Só se for print_stepup, lê cada pessoa que aparece " +
   "e devolve o nome, os passos e a distância em km. " +
   "Não inventes nada: se um nome ou um número não se consegue ler, deixa essa pessoa de fora. " +
@@ -165,6 +168,20 @@ export function juntar(linhas: Linha[]) {
 }
 
 
+// Apaga do Storage as fotos que não serviram.
+// Usa a chave de serviço do Supabase (só existe no servidor) porque o site não tem permissão para apagar.
+// Nunca dá erro: se não conseguir apagar, só escreve nos Logs.
+async function apagarFotos(caminhos: string[]) {
+  try {
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { error } = await admin.storage.from("prints").remove(caminhos);
+    if (error) console.error("Não consegui apagar as fotos:", error.message);
+  } catch (e) {
+    console.error("Não consegui apagar as fotos:", e);
+  }
+}
+
+
 //------------------------------------------------------------
 // Chamada ao Gemini (uma foto)
 //------------------------------------------------------------
@@ -214,6 +231,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return resposta({ erro: "Usa POST." }, 405);
 
+  let caminhos: string[] = [];
+  let fotosValidadas = false; // passa a true quando os caminhos são mesmo deste utilizador
+
   try {
     // 1. Cliente com a sessão de quem pediu (as regras da base de dados aplicam-se a ele)
     const sb = createClient(
@@ -227,10 +247,11 @@ Deno.serve(async (req) => {
 
     // Caminhos: 1 ou 2, todos na pasta do próprio utilizador
     const corpo = await req.json().catch(() => ({}));
-    const caminhos: string[] = Array.isArray(corpo?.caminhos) ? corpo.caminhos.map(String) : [];
+    caminhos = Array.isArray(corpo?.caminhos) ? corpo.caminhos.map(String) : [];
     if (caminhos.length === 0) return resposta({ erro: "Não enviaste nenhum print." }, 400);
     if (caminhos.length > MAX_FOTOS) return resposta({ erro: "Podes enviar no máximo " + MAX_FOTOS + " prints." }, 400);
-    if (caminhos.some((c) => !c.startsWith(user.id + "/"))) return resposta({ erro: "Print inválido." }, 400);
+    if (caminhos.some((c) => !c.startsWith(user.id + "/") || c.includes(".."))) return resposta({ erro: "Print inválido." }, 400);
+    fotosValidadas = true;
 
     // 2, 3 e 4. Cada foto: Storage -> Gemini -> conferir (as fotos são lidas ao mesmo tempo)
     const fotos = await Promise.all(caminhos.map(async (caminho) => {
@@ -240,17 +261,24 @@ Deno.serve(async (req) => {
       return limpar(await perguntarGemini(paraBase64(bytes), ficheiro.type || "image/png"));
     }));
 
-    // 5. Alguma foto não é válida: não grava nada e diz qual foi (foto 1, foto 2)
+    // 5. Alguma foto não é válida: não grava nada, apaga as fotos deste envio e diz qual foi (foto 1, foto 2)
+    //    (apaga as 2: o delegado volta a enviar as duas depois de trocar a errada)
     const invalidas = fotos
       .map((f, i) => ({ foto: i + 1, tipo: f.tipo, valido: f.valido }))
       .filter((f) => !f.valido)
       .map(({ foto, tipo }) => ({ foto, tipo }));
-    if (invalidas.length > 0) return resposta({ valido: false, invalidas });
+    if (invalidas.length > 0) {
+      await apagarFotos(caminhos);
+      return resposta({ valido: false, invalidas });
+    }
 
     // Turma: a da conta do delegado; se a conta não tiver, a que aparece no print
     const turmaConta = String(user.user_metadata?.["class"] ?? "").trim();
     const turma = turmaConta || fotos.map((f) => f.turma).find((t) => t !== "") || "";
-    if (turma === "") return resposta({ erro: "Não sei de que turma é este print. Põe a turma na tua conta." }, 400);
+    if (turma === "") {
+      await apagarFotos(caminhos);
+      return resposta({ erro: "Não sei de que turma é este print. Põe a turma na tua conta." }, 400);
+    }
 
     // 6. Gravar (o trigger da tabela põe a turma em maiúsculas e anota quem enviou)
     const linhas = juntar(fotos.flatMap((f) => {
@@ -263,6 +291,8 @@ Deno.serve(async (req) => {
     return resposta({ valido: true, turma, formandos: linhas.map(({ dia, nome, passos, km }) => ({ dia, nome, passos, km })) });
   } catch (e) {
     console.error(e);
+    // deu erro a meio (Gemini em baixo, etc.): as fotos não ficam ligadas a nada, apaga-as
+    if (fotosValidadas) await apagarFotos(caminhos);
     return resposta({ erro: e instanceof Error ? e.message : String(e) }, 500);
   }
 });
