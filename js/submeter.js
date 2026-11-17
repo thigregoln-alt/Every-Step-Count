@@ -86,7 +86,19 @@ document.addEventListener("paste",function(e){
   add(e.clipboardData.files);
 });
 
-/* Enviar: prints para o Storage, depois a linha na tabela submissoes */
+/* Ler um print com o Gemini (Edge Function "ler-print" no Supabase).
+   A função lê, confere e grava na tabela registos; devolve o que gravou. */
+function lerPrint(path){
+  return sb.functions.invoke("ler-print",{body:{caminho:path}}).then(function(r){
+    if(!r.error)return r.data;
+    /* erro da função: tenta mostrar a mensagem que ela mandou */
+    var ctx=r.error.context;
+    if(ctx&&ctx.json)return ctx.json().then(function(d){throw new Error(d&&d.erro?d.erro:r.error.message)},function(){throw r.error});
+    throw r.error;
+  });
+}
+
+/* Enviar: prints para o Storage, a linha na tabela submissoes e depois o Gemini lê cada print */
 f.addEventListener("submit",function(e){
   e.preventDefault();
   if(!items.length){say("Escolhe pelo menos um print.");return}
@@ -109,7 +121,27 @@ f.addEventListener("submit",function(e){
     if(r.error)throw r.error;
     items.forEach(function(it){URL.revokeObjectURL(it.url)});
     items=[];render();
-    btn.disabled=false;say("Pontuação enviada. Obrigado!",true);
+
+    /* um print de cada vez, para não mandar tudo ao Gemini ao mesmo tempo */
+    say("A ler os prints…");
+    var lidos=0,ler=Promise.resolve();
+    paths.forEach(function(p){
+      ler=ler.then(function(){return lerPrint(p)}).then(function(d){
+        lidos+=(d&&d.formandos)?d.formandos.length:0;
+      });
+    });
+    return ler.then(function(){
+      btn.disabled=false;
+      if(lidos===0){say("Não consegui ler passos nos prints. Confirma que é o ecrã do StepUp.");return}
+      msg.classList.add("ok");
+      msg.textContent=T("Pontuação enviada. Obrigado!")+" "+T("Formandos lidos:")+" "+lidos;
+    },function(err){
+      /* os prints já ficaram guardados; só a leitura falhou */
+      console.error(err);
+      btn.disabled=false;
+      msg.classList.remove("ok");
+      msg.textContent=T("Os prints foram guardados, mas não foi possível lê-los.")+(err&&err.message?" ("+err.message+")":"");
+    });
   }).catch(function(err){
     console.error(err);
     btn.disabled=false;

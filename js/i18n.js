@@ -178,6 +178,10 @@ var D={
 "A enviar…":["Sending…","Enviando…","Envoi…"],
 "Pontuação enviada. Obrigado!":["Score sent. Thank you!","Puntuación enviada. ¡Gracias!","Score envoyé. Merci !"],
 "Não foi possível enviar. Tenta novamente.":["Couldn’t send. Please try again.","No se pudo enviar. Inténtalo de nuevo.","Envoi impossible. Réessaie."],
+"A ler os prints…":["Reading the screenshots…","Leyendo las capturas…","Lecture des captures…"],
+"Formandos lidos:":["Trainees read:","Alumnos leídos:","Stagiaires lus :"],
+"Não consegui ler passos nos prints. Confirma que é o ecrã do StepUp.":["Couldn’t read any steps in the screenshots. Check that it’s the StepUp screen.","No pude leer pasos en las capturas. Comprueba que es la pantalla de StepUp.","Impossible de lire des pas sur les captures. Vérifie que c’est l’écran StepUp."],
+"Os prints foram guardados, mas não foi possível lê-los.":["The screenshots were saved, but couldn’t be read.","Las capturas se guardaron, pero no se pudieron leer.","Les captures ont été enregistrées, mais n’ont pas pu être lues."],
 
 /* rankings */
 "Ver ranking":["View ranking","Ver ranking","Voir le classement"],
