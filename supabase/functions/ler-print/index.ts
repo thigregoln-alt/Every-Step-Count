@@ -11,6 +11,9 @@
 //   6. se todas forem válidas, confere os números e grava na tabela "registos"
 //      (upsert: o mesmo formando no mesmo dia não conta a dobrar)
 //
+// Só esta função consegue gravar na tabela "registos" (usa a chave de serviço, que só existe no servidor).
+// O site e os utilizadores só podem ler. Assim, os números do ranking vêm sempre de um print que o Gemini aceitou.
+//
 // A chave do Gemini NUNCA está no site: fica no Supabase como segredo GOOGLE_API_KEY (ou GEMINI_API_KEY).
 // O modelo pode ser mudado sem mexer no código com o segredo GEMINI_MODEL.
 //
@@ -168,12 +171,17 @@ export function juntar(linhas: Linha[]) {
 }
 
 
+// Cliente com a chave de serviço do Supabase (só existe no servidor, nunca vai para o site).
+// Serve para o que os utilizadores não podem fazer: gravar no ranking e apagar fotos.
+function clienteServico() {
+  return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+}
+
 // Apaga do Storage as fotos que não serviram.
-// Usa a chave de serviço do Supabase (só existe no servidor) porque o site não tem permissão para apagar.
 // Nunca dá erro: se não conseguir apagar, só escreve nos Logs.
 async function apagarFotos(caminhos: string[]) {
   try {
-    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const admin = clienteServico();
     const { error } = await admin.storage.from("prints").remove(caminhos);
     if (error) console.error("Não consegui apagar as fotos:", error.message);
   } catch (e) {
@@ -310,12 +318,13 @@ Deno.serve(async (req) => {
       return resposta({ erro: "Não sei de que turma é este print. Põe a turma na tua conta." }, 400);
     }
 
-    // 6. Gravar (o trigger da tabela põe a turma em maiúsculas e anota quem enviou)
+    // 6. Gravar com a chave de serviço (o trigger da tabela põe a turma em maiúsculas)
     const linhas = juntar(fotos.flatMap((f) => {
       const dia = escolherDia(f.data);
       return f.formandos.map((p) => ({ dia, turma, nome: p.nome, passos: p.passos, km: p.km }));
     }));
-    const { error: erroGravar } = await sb.from("registos").upsert(linhas, { onConflict: "dia,turma,nome" });
+    const paraGravar = linhas.map((l) => ({ ...l, enviado_por: user.id }));
+    const { error: erroGravar } = await clienteServico().from("registos").upsert(paraGravar, { onConflict: "dia,turma,nome" });
     if (erroGravar) throw new Error("Erro ao gravar: " + erroGravar.message);
 
     return resposta({ valido: true, turma, formandos: linhas.map(({ dia, nome, passos, km }) => ({ dia, nome, passos, km })) });
