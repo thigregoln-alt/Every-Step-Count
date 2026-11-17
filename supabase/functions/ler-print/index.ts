@@ -11,11 +11,13 @@
 //   6. se todas forem válidas, confere os números e grava na tabela "registos"
 //      (upsert: o mesmo formando no mesmo dia não conta a dobrar)
 //
+// Aceita qualquer ecrã do StepUp: a lista de pessoas vai para "registos", o resumo do grupo (total) vai para "totais_turma".
 // Só esta função consegue gravar na tabela "registos" (usa a chave de serviço, que só existe no servidor).
 // O site e os utilizadores só podem ler. Assim, os números do ranking vêm sempre de um print que o Gemini aceitou.
 //
 // A chave do Gemini NUNCA está no site: fica no Supabase como segredo GOOGLE_API_KEY (ou GEMINI_API_KEY).
 // O modelo pode ser mudado sem mexer no código com o segredo GEMINI_MODEL.
+// Se um modelo estiver ocupado ou demorar mais de 25 s, a função tenta outro sozinha (primeiro os "flash-lite").
 //
 // Fluxo: site -> Supabase (Storage + esta função) -> Gemini -> esta função -> tabela registos -> site
 // O site nunca fala com o Gemini.
@@ -51,48 +53,70 @@ const ESQUEMA = {
       type: "string",
       enum: TIPOS,
       description:
-        "print_stepup: ecrã da app StepUp com nomes e passos legíveis. " +
+        "print_stepup: QUALQUER ecrã da app StepUp (lista dos membros com os passos, resumo/estatísticas do grupo, " +
+        "perfil, desafio, etc.). " +
         "outra_app: print de outra app de passos ou de saúde (Samsung Health, Google Fit, Strava, etc.). " +
         "outra_coisa: qualquer outra imagem (foto, selfie, documento, meme, ecrã que não é de passos). " +
-        "ilegivel: parece o StepUp, mas está desfocado, cortado ou não dá para ler os números.",
+        "ilegivel: parece o StepUp, mas está desfocado, cortado ou não dá para ler nenhum número de passos.",
     },
     turma: {
       type: "string",
-      description: "Nome do grupo/turma que aparece no topo do print. Vazio se não aparecer.",
+      description: "Nome do grupo/turma que aparece no print (ex.: no topo ou em 'Nome do grupo'). Vazio se não aparecer.",
     },
     data: {
       type: "string",
-      description: "Data a que os passos dizem respeito, no formato AAAA-MM-DD, se aparecer no print. Vazio se não aparecer.",
+      description:
+        "Data a que os passos dizem respeito, no formato AAAA-MM-DD, se aparecer no print. " +
+        "Se aparecer um intervalo de datas, é a data do FIM do intervalo. Vazio se não aparecer.",
+    },
+    data_inicio: {
+      type: "string",
+      description: "Se aparecer um intervalo de datas, a data do INÍCIO (AAAA-MM-DD). Vazio se não houver intervalo.",
+    },
+    total_grupo: {
+      type: "object",
+      description:
+        "Totais do grupo inteiro, se o ecrã os mostrar (ex.: 'Soma dos passos totais de todos os membros', " +
+        "'Distância total percorrida pelo grupo', 'Número de membros'). Tudo 0 se o ecrã não mostrar totais do grupo.",
+      properties: {
+        passos: { type: "integer", description: "Soma dos passos de todos os membros, sem pontos nem espaços. 0 se não aparecer." },
+        km: { type: "number", description: "Distância total do grupo em km. Se aparecer em milhas e em km, usa os km. Se só houver milhas, converte (x 1,609). 0 se não aparecer." },
+        membros: { type: "integer", description: "Número de membros do grupo. 0 se não aparecer." },
+      },
+      required: ["passos", "km", "membros"],
     },
     formandos: {
       type: "array",
-      description: "Uma entrada por cada pessoa visível no print. Vazio se tipo não for print_stepup.",
+      description: "Uma entrada por cada pessoa visível no print, com os passos dela. Vazio se o ecrã não mostrar pessoas.",
       items: {
         type: "object",
         properties: {
           nome: { type: "string", description: "Nome da pessoa exatamente como aparece no print" },
           passos: { type: "integer", description: "Número de passos, sem pontos nem espaços" },
-          km: { type: "number", description: "Distância em quilómetros. Se estiver em metros, converte para km. 0 se não aparecer." },
+          km: { type: "number", description: "Distância em quilómetros. Se estiver em metros ou milhas, converte para km. 0 se não aparecer." },
         },
         required: ["nome", "passos"],
       },
     },
   },
-  required: ["tipo", "formandos"],
+  required: ["tipo", "formandos", "total_grupo"],
 };
 
 const PEDIDO =
-  "Recebes uma imagem enviada por um delegado de turma. Deveria ser um print da app StepUp " +
-  "com os passos do dia de cada pessoa de uma turma. " +
-  "Primeiro diz que tipo de imagem é. Só se for print_stepup, lê cada pessoa que aparece " +
-  "e devolve o nome, os passos e a distância em km. " +
-  "Não inventes nada: se um nome ou um número não se consegue ler, deixa essa pessoa de fora. " +
-  "Não incluas totais do grupo, só pessoas.";
+  "Recebes uma imagem enviada por um delegado de turma. Deveria ser um print da app StepUp. " +
+  "Primeiro diz que tipo de imagem é. Qualquer ecrã do StepUp é print_stepup, mesmo que não tenha nomes " +
+  "(por exemplo o resumo do grupo, só com os totais). Só é outra_app ou outra_coisa se não for do StepUp. " +
+  "Se for print_stepup: " +
+  "1) se o ecrã mostrar pessoas, lê cada pessoa (nome, passos e km) para 'formandos'; " +
+  "2) se o ecrã mostrar os totais do grupo, lê-os para 'total_grupo'; " +
+  "3) lê o nome do grupo/turma e a data (ou o intervalo de datas), se aparecerem. " +
+  "Não ponhas os totais do grupo dentro de 'formandos'. " +
+  "Não inventes nada: se um nome ou um número não se consegue ler, deixa-o de fora (ou 0 nos totais).";
 
 
 //------------------------------------------------------------
 // Confere o que o Gemini devolveu para UMA foto.
-// Devolve { valido, tipo, turma, data, formandos }.
+// Devolve { valido, tipo, turma, data, data_inicio, total, formandos }.
 //------------------------------------------------------------
 export function limpar(lido: any) {
   const formandos: { nome: string; passos: number; km: number }[] = [];
@@ -124,12 +148,28 @@ export function limpar(lido: any) {
 
   const turma = String(lido?.turma ?? "").replace(/\s+/g, " ").trim().slice(0, 40);
   const data = /^\d{4}-\d{2}-\d{2}$/.test(String(lido?.data ?? "")) ? String(lido.data) : "";
+  const inicio = /^\d{4}-\d{2}-\d{2}$/.test(String(lido?.data_inicio ?? "")) ? String(lido.data_inicio) : "";
+  const data_inicio = inicio !== "" && data !== "" && inicio <= data ? inicio : "";
 
-  // diz que é do StepUp mas não se leu ninguém: conta como ilegível
-  if (tipo === "print_stepup" && formandos.length === 0) {
-    return { valido: false, tipo: "ilegivel", turma, data, formandos };
+  // Totais do grupo (ecrã de resumo do StepUp). Passos 0 = o ecrã não tinha totais.
+  const total = { passos: 0, km: 0, membros: 0 };
+  if (tipo === "print_stepup") {
+    const passos = Number(lido?.total_grupo?.passos);
+    let km = Number(lido?.total_grupo?.km ?? 0);
+    const membros = Number(lido?.total_grupo?.membros ?? 0);
+    if (Number.isInteger(passos) && passos > 0 && passos <= 5000000) {
+      if (!Number.isFinite(km) || km < 0 || km > 5000) km = 0;
+      total.passos = passos;
+      total.km = Math.round(km * 10) / 10;
+      total.membros = Number.isInteger(membros) && membros > 0 && membros <= 200 ? membros : 0;
+    }
   }
-  return { valido: tipo === "print_stepup", tipo, turma, data, formandos };
+
+  // diz que é do StepUp mas não se leu nenhuma pessoa nem o total do grupo: conta como ilegível
+  if (tipo === "print_stepup" && formandos.length === 0 && total.passos === 0) {
+    return { valido: false, tipo: "ilegivel", turma, data, data_inicio, total, formandos };
+  }
+  return { valido: tipo === "print_stepup", tipo, turma, data, data_inicio, total, formandos };
 }
 
 
@@ -171,6 +211,18 @@ export function juntar(linhas: Linha[]) {
 }
 
 
+// O mesmo para os totais do grupo: a mesma turma no mesmo dia fica uma vez, com o maior total
+type Total = { dia: string; dia_inicio: string | null; turma: string; passos: number; km: number; membros: number };
+export function juntarTotais(totais: Total[]) {
+  const mapa = new Map<string, Total>();
+  for (const t of totais) {
+    const antes = mapa.get(t.dia);
+    if (!antes || t.passos > antes.passos) mapa.set(t.dia, t);
+  }
+  return [...mapa.values()];
+}
+
+
 // Cliente com a chave de serviço do Supabase (só existe no servidor, nunca vai para o site).
 // Serve para o que os utilizadores não podem fazer: gravar no ranking e apagar fotos.
 function clienteServico() {
@@ -194,29 +246,46 @@ async function apagarFotos(caminhos: string[]) {
 // Chamada ao Gemini (uma foto)
 //------------------------------------------------------------
 const GOOGLE = "https://generativelanguage.googleapis.com/v1beta/";
-let modeloEmUso = ""; // fica guardado enquanto a função está ligada
+const ESPERA_MAXIMA = 25000;  // cada tentativa ao Gemini pode demorar no máximo 25 s
+const TEMPO_TOTAL = 90000;    // depois de 90 s não tenta mais modelos (o Supabase mata a função aos ~150 s)
+let modeloEmUso = "";         // o último modelo que funcionou, fica guardado enquanto a função está ligada
+let modelosDaChave: string[] = []; // lista de modelos que a chave pode usar, também fica guardada
 
-// Se o modelo pedido não existir, pergunta à Google que modelos há e usa o "flash" mais recente
-export function melhorFlash(nomes: string[]) {
-  const flash = nomes
+// Ordem dos modelos a tentar: primeiro os "flash-lite" (mais rápidos e com menos gente a usar),
+// depois os "flash". Dentro de cada grupo, do mais recente para o mais antigo. Sem preview/exp.
+export function ordemModelos(nomes: string[]) {
+  const lista = nomes
     .map((n) => n.replace(/^models\//, ""))
-    .filter((n) => /^gemini-\d+(\.\d+)?-flash$/.test(n));
-  flash.sort((a, b) => parseFloat(b.slice(7)) - parseFloat(a.slice(7)));
-  return flash[0] ?? "";
+    .filter((n) => /^gemini-\d+(\.\d+)?-flash(-lite)?$/.test(n));
+  lista.sort((a, b) => {
+    const liteA = a.endsWith("-lite") ? 0 : 1;
+    const liteB = b.endsWith("-lite") ? 0 : 1;
+    if (liteA !== liteB) return liteA - liteB;
+    return parseFloat(b.slice(7)) - parseFloat(a.slice(7));
+  });
+  return lista;
 }
 
 async function listarModelos(chave: string) {
-  const r = await fetch(GOOGLE + "models?pageSize=200", { headers: { "x-goog-api-key": chave } });
-  const corpo = await r.json().catch(() => null);
-  return (corpo?.models ?? [])
-    .filter((m: any) => (m.supportedGenerationMethods ?? []).includes("generateContent"))
-    .map((m: any) => String(m.name));
+  try {
+    const r = await fetch(GOOGLE + "models?pageSize=200", {
+      headers: { "x-goog-api-key": chave },
+      signal: AbortSignal.timeout(10000),
+    });
+    const corpo = await r.json().catch(() => null);
+    return (corpo?.models ?? [])
+      .filter((m: any) => (m.supportedGenerationMethods ?? []).includes("generateContent"))
+      .map((m: any) => String(m.name));
+  } catch {
+    return [];
+  }
 }
 
 async function chamarModelo(chave: string, modelo: string, imagemBase64: string, tipo: string) {
   return await fetch(GOOGLE + "models/" + modelo + ":generateContent", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
+    signal: AbortSignal.timeout(ESPERA_MAXIMA), // se o modelo estiver pendurado, desiste e tenta outro
     body: JSON.stringify({
       contents: [{
         parts: [
@@ -237,28 +306,49 @@ async function perguntarGemini(imagemBase64: string, tipo: string) {
   // a chave da Google do projeto (já usada pelo grupo) ou uma só para o Gemini
   const chave = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
   if (!chave) throw new Error("Falta o segredo GOOGLE_API_KEY no Supabase.");
-  if (!modeloEmUso) modeloEmUso = Deno.env.get("GEMINI_MODEL") || "gemini-3.8-flash";
+  if (modelosDaChave.length === 0) modelosDaChave = ordemModelos(await listarModelos(chave));
 
-  let r = await chamarModelo(chave, modeloEmUso, imagemBase64, tipo);
-  if (r.status === 404) {
-    const outro = melhorFlash(await listarModelos(chave));
-    if (outro && outro !== modeloEmUso) {
-      console.log("Modelo " + modeloEmUso + " não existe; a usar " + outro);
-      modeloEmUso = outro;
-      r = await chamarModelo(chave, modeloEmUso, imagemBase64, tipo);
+  // 1º o modelo que já funcionou (ou o do segredo GEMINI_MODEL), depois a lista, e no fim o padrão
+  const tentar = [modeloEmUso, Deno.env.get("GEMINI_MODEL") ?? "", ...modelosDaChave, "gemini-3.8-flash"]
+    .filter((m, i, lista) => m !== "" && lista.indexOf(m) === i)
+    .slice(0, 5);
+
+  const inicio = Date.now();
+  let ultimoErro = "";
+  for (const modelo of tentar) {
+    if (Date.now() - inicio > TEMPO_TOTAL) break;
+
+    let r: Response;
+    try {
+      r = await chamarModelo(chave, modelo, imagemBase64, tipo);
+    } catch {
+      ultimoErro = modelo + " demorou mais de " + ESPERA_MAXIMA / 1000 + " s";
+      console.log(ultimoErro + "; a tentar outro modelo");
+      continue;
+    }
+
+    const corpo = await r.json().catch(() => null);
+    // ocupado (503), sem quota (429) ou não existe (404): tenta o próximo modelo
+    if (r.status === 503 || r.status === 429 || r.status === 404) {
+      ultimoErro = modelo + " respondeu " + r.status;
+      console.log(ultimoErro + "; a tentar outro modelo");
+      continue;
+    }
+    if (!r.ok) {
+      throw new Error("Gemini (" + modelo + ") respondeu " + r.status + ": " + (corpo?.error?.message ?? "sem detalhe"));
+    }
+
+    if (modelo !== modeloEmUso) console.log("A usar o modelo " + modelo);
+    modeloEmUso = modelo;
+    const texto = corpo?.candidates?.[0]?.content?.parts?.map((p: any) => p.text ?? "").join("") ?? "";
+    try {
+      return JSON.parse(texto);
+    } catch {
+      throw new Error("O Gemini não devolveu JSON válido.");
     }
   }
 
-  const corpo = await r.json().catch(() => null);
-  if (!r.ok) {
-    throw new Error("Gemini (" + modeloEmUso + ") respondeu " + r.status + ": " + (corpo?.error?.message ?? "sem detalhe"));
-  }
-  const texto = corpo?.candidates?.[0]?.content?.parts?.map((p: any) => p.text ?? "").join("") ?? "";
-  try {
-    return JSON.parse(texto);
-  } catch {
-    throw new Error("O Gemini não devolveu JSON válido.");
-  }
+  throw new Error("O Gemini está muito ocupado agora (" + ultimoErro + "). Tenta outra vez daqui a uns minutos.");
 }
 
 
@@ -323,11 +413,33 @@ Deno.serve(async (req) => {
       const dia = escolherDia(f.data);
       return f.formandos.map((p) => ({ dia, turma, nome: p.nome, passos: p.passos, km: p.km }));
     }));
-    const paraGravar = linhas.map((l) => ({ ...l, enviado_por: user.id }));
-    const { error: erroGravar } = await clienteServico().from("registos").upsert(paraGravar, { onConflict: "dia,turma,nome" });
-    if (erroGravar) throw new Error("Erro ao gravar: " + erroGravar.message);
+    if (linhas.length > 0) {
+      const paraGravar = linhas.map((l) => ({ ...l, enviado_por: user.id }));
+      const { error: erroGravar } = await clienteServico().from("registos").upsert(paraGravar, { onConflict: "dia,turma,nome" });
+      if (erroGravar) throw new Error("Erro ao gravar: " + erroGravar.message);
+    }
 
-    return resposta({ valido: true, turma, formandos: linhas.map(({ dia, nome, passos, km }) => ({ dia, nome, passos, km })) });
+    // Ecrã de resumo do grupo: grava o total da turma (um por turma e por dia; se vierem 2 do mesmo dia, fica o maior)
+    const totais = juntarTotais(fotos.filter((f) => f.total.passos > 0).map((f) => ({
+      dia: escolherDia(f.data),
+      dia_inicio: f.data_inicio !== "" ? f.data_inicio : null,
+      turma,
+      passos: f.total.passos,
+      km: f.total.km,
+      membros: f.total.membros,
+    })));
+    if (totais.length > 0) {
+      const paraGravar = totais.map((t) => ({ ...t, enviado_por: user.id }));
+      const { error: erroTotais } = await clienteServico().from("totais_turma").upsert(paraGravar, { onConflict: "dia,turma" });
+      if (erroTotais) throw new Error("Erro ao gravar o total da turma: " + erroTotais.message);
+    }
+
+    return resposta({
+      valido: true,
+      turma,
+      formandos: linhas.map(({ dia, nome, passos, km }) => ({ dia, nome, passos, km })),
+      totais: totais.map(({ dia, passos, km, membros }) => ({ dia, passos, km, membros })),
+    });
   } catch (e) {
     console.error(e);
     // deu erro a meio (Gemini em baixo, etc.): as fotos não ficam ligadas a nada, apaga-as
