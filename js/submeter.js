@@ -6,7 +6,7 @@ var f=document.getElementById("f-up");
 if(!f)return;
 
 var sb=window.ATEC_SB||null;
-var MAX=4,SIZE=8*1024*1024,EXT={"image/png":"png","image/jpeg":"jpg","image/webp":"webp"};
+var MAX=2,SIZE=8*1024*1024,EXT={"image/png":"png","image/jpeg":"jpg","image/webp":"webp"};
 var drop=document.getElementById("drop"),input=document.getElementById("file"),thumbs=document.getElementById("thumbs");
 var msg=f.querySelector(".msg"),btn=f.querySelector("button[type=submit]"),items=[],user=null;
 
@@ -68,7 +68,7 @@ function add(list){
   var err="";
   [].slice.call(list).forEach(function(file){
     if(!EXT[file.type]||file.size>SIZE){err="Ficheiro inválido. Usa PNG, JPG ou WebP até 8 MB.";return}
-    if(items.length>=MAX){err="Podes enviar no máximo 4 prints.";return}
+    if(items.length>=MAX){err="Podes enviar no máximo 2 prints.";return}
     items.push({file:file,url:URL.createObjectURL(file)});
   });
   render();say(err);
@@ -86,7 +86,38 @@ document.addEventListener("paste",function(e){
   add(e.clipboardData.files);
 });
 
-/* Enviar: prints para o Storage, depois a linha na tabela submissoes */
+/* Ler os prints com o Gemini (Edge Function "ler-print" no Supabase).
+   A função vê se cada foto é um print do StepUp; se forem todas, grava na tabela registos. */
+function lerPrints(paths){
+  return sb.functions.invoke("ler-print",{body:{caminhos:paths}}).then(function(r){
+    if(!r.error)return r.data;
+    /* erro da função: tenta mostrar a mensagem que ela mandou */
+    var ctx=r.error.context;
+    if(ctx&&ctx.json)return ctx.json().then(function(d){throw new Error(d&&d.erro?d.erro:r.error.message)},function(){throw r.error});
+    throw r.error;
+  });
+}
+
+/* O que dizer quando uma foto não serve (o tipo vem do Gemini) */
+var MOTIVO={
+  outra_app:"é de outra app, não do StepUp.",
+  outra_coisa:"não é um print do StepUp.",
+  ilegivel:"não dá para ler. Tira um print mais nítido."
+};
+function fotosInvalidas(lista){
+  return lista.map(function(x){
+    return T("Foto")+" "+x.foto+": "+T(MOTIVO[x.tipo]||MOTIVO.outra_coisa);
+  }).join(" ");
+}
+
+function erro(texto,err){
+  console.error(err);
+  btn.disabled=false;
+  msg.classList.remove("ok");
+  msg.textContent=T(texto)+(err&&err.message?" ("+err.message+")":"");
+}
+
+/* Enviar: prints para o Storage -> o Gemini verifica e lê -> só se forem válidos fica a submissão */
 f.addEventListener("submit",function(e){
   e.preventDefault();
   if(!items.length){say("Escolhe pelo menos um print.");return}
@@ -103,19 +134,27 @@ f.addEventListener("submit",function(e){
       });
     });
   });
+
   chain.then(function(){
-    return sb.from("submissoes").insert({dia:hoje(),prints:paths});
-  }).then(function(r){
-    if(r.error)throw r.error;
-    items.forEach(function(it){URL.revokeObjectURL(it.url)});
-    items=[];render();
-    btn.disabled=false;say("Pontuação enviada. Obrigado!",true);
-  }).catch(function(err){
-    console.error(err);
-    btn.disabled=false;
-    msg.classList.remove("ok");
-    msg.textContent=T("Não foi possível enviar. Tenta novamente.")+(err&&err.message?" ("+err.message+")":"");
-  });
+    say("A verificar os prints…");
+    return lerPrints(paths).then(function(d){
+      /* alguma foto não é do StepUp: não grava nada, as fotos ficam na caixa para trocar */
+      if(!d||d.valido!==true){
+        btn.disabled=false;
+        msg.classList.remove("ok");
+        msg.textContent=fotosInvalidas((d&&d.invalidas)||[]);
+        return;
+      }
+      return sb.from("submissoes").insert({dia:hoje(),prints:paths}).then(function(r){
+        if(r.error)throw r.error;
+        items.forEach(function(it){URL.revokeObjectURL(it.url)});
+        items=[];render();
+        btn.disabled=false;
+        msg.classList.add("ok");
+        msg.textContent=T("Pontuação enviada. Obrigado!")+" "+T("Formandos lidos:")+" "+d.formandos.length;
+      });
+    },function(err){erro("Não foi possível ler os prints. Tenta novamente.",err)});
+  }).catch(function(err){erro("Não foi possível enviar. Tenta novamente.",err)});
 });
 
 /* Terminar sessão: limpa a sessão guardada e volta ao login */
