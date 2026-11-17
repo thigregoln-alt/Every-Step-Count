@@ -111,6 +111,9 @@ footer{background:var(--forest);color:#F6F7F3;padding:clamp(70px,10vw,140px) var
 .mq div{animation:mq 24s linear infinite;padding-right:.4em}
 @keyframes mq{to{transform:translateX(-100%)}}
 footer small{display:block;margin-top:28px;max-width:70ch;opacity:.75}
+footer .feito{margin-top:16px;font-size:15px;font-weight:600}
+footer .feito a{color:var(--amber);text-decoration:underline;text-underline-offset:4px}
+footer .feito a:hover{color:#fff}
 @media(max-width:860px){.cols,.dg,.row{grid-template-columns:1fr}.top{flex-direction:column;align-items:start}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.rv{opacity:1;transform:none}.ln>span{animation:none;transform:none}.fc,.mesh b,.mq div{animation:none}}
 

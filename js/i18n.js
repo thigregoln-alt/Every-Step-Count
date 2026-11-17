@@ -11,6 +11,7 @@ fr:'<svg viewBox="0 0 36 24" preserveAspectRatio="none"><rect width="36" height=
 
 /* chave = texto em português · valor = [inglês, espanhol, francês] */
 var D={
+"Feito por":["Made by", "Hecho por", "Réalisé par"],
 "Cada":["Every", "Cada", "Chaque"],
 "passo":["step", "paso", "pas"],
 "Descobre porquê":["Discover why", "Descubre por qué", "Découvre pourquoi"],
