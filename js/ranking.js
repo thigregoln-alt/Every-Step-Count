@@ -9,29 +9,42 @@ var T=function(s){return window.t?window.t(s):s};
    Cada linha é um registo: formando, turma, passos e km (os km vêm no print do StepUp).
    Não há dados inventados: se a tabela estiver vazia, as páginas dizem "Ainda não há dados." */
 var registos=[];
+var totais=[];  /* totais das turmas (ecrã de resumo do grupo no StepUp), da tabela "totais_turma" */
 var estado="a carregar"; /* "a carregar" -> "pronto" ou "erro" */
 var pedido=0;            /* número do último pedido feito ao Supabase (ver carregar) */
 
 /* O Supabase devolve no máximo 1000 linhas de cada vez: pede-se por partes até ter todas.
    "count" é o total de linhas da tabela. O "order" serve para as partes não repetirem nem saltarem linhas. */
 function buscar(sb,lista){
-  return sb.from("registos").select("nome,turma,passos,km",{count:"exact"}).order("id").range(lista.length,lista.length+999).then(function(r){
+  return sb.from("registos").select("dia,nome,turma,passos,km",{count:"exact"}).order("id").range(lista.length,lista.length+999).then(function(r){
     if(r.error)throw r.error;
     r.data.forEach(function(l){
-      lista.push({nome:l.nome,turma:l.turma,passos:Number(l.passos)||0,km:Number(l.km)||0});
+      lista.push({dia:l.dia,nome:l.nome,turma:l.turma,passos:Number(l.passos)||0,km:Number(l.km)||0});
     });
     if(r.data.length&&lista.length<r.count)return buscar(sb,lista);
+  });
+}
+
+/* O mesmo para os totais das turmas (ver supabase/totais_turma.sql) */
+function buscarTotais(sb,lista){
+  return sb.from("totais_turma").select("dia,turma,passos,km,membros",{count:"exact"}).order("id").range(lista.length,lista.length+999).then(function(r){
+    if(r.error)throw r.error;
+    r.data.forEach(function(l){
+      lista.push({dia:l.dia,turma:l.turma,passos:Number(l.passos)||0,km:Number(l.km)||0,membros:Number(l.membros)||0});
+    });
+    if(r.data.length&&lista.length<r.count)return buscarTotais(sb,lista);
   });
 }
 
 /* Vai buscar todos os registos e redesenha a página.
    Os dados novos vão para uma lista à parte: a página continua a mostrar os antigos até os novos chegarem. */
 function carregar(){
-  var sb=window.ATEC_SB,novos=[],meu=++pedido;
+  var sb=window.ATEC_SB,novos=[],novosTotais=[],meu=++pedido;
   if(!sb){estado="erro";desenhar();return}
-  buscar(sb,novos).then(function(){
+  Promise.all([buscar(sb,novos),buscarTotais(sb,novosTotais)]).then(function(){
     if(meu!==pedido)return; /* entretanto já foi feito um pedido mais recente: este já não interessa */
     registos=novos;
+    totais=novosTotais;
     estado="pronto";
     desenhar();
   },function(erro){
@@ -45,15 +58,17 @@ function carregar(){
    Quando os registos de um print entram na base de dados, o Supabase (Realtime) avisa todas as
    páginas que estão abertas, e cada uma vai buscar os dados outra vez. Ninguém precisa de recarregar. */
 var espera=null,jaLigou=false;
+/* um print dá muitos registos de uma vez: espera-se 1 segundo depois do último aviso para buscar só uma vez */
+function mudou(){
+  clearTimeout(espera);
+  espera=setTimeout(carregar,1000);
+}
 function ouvirMudancas(){
   var sb=window.ATEC_SB;
   if(!sb)return;
   sb.channel("ranking")
-    .on("postgres_changes",{event:"*",schema:"public",table:"registos"},function(){
-      /* um print dá muitos registos de uma vez: espera-se 1 segundo depois do último aviso para buscar só uma vez */
-      clearTimeout(espera);
-      espera=setTimeout(carregar,1000);
-    })
+    .on("postgres_changes",{event:"*",schema:"public",table:"registos"},mudou)
+    .on("postgres_changes",{event:"*",schema:"public",table:"totais_turma"},mudou)
     .subscribe(function(situacao){
       if(situacao!=="SUBSCRIBED")return;
       /* se a ligação caiu e voltou (telemóvel bloqueado, Wi-Fi a falhar), podem ter-se perdido avisos:
@@ -93,14 +108,40 @@ function somarFormandos(){
   return lista.sort(porPassos);
 }
 
-/* Soma os formandos de cada turma. Também do mais para o menos. */
+/* Total de cada turma, dia a dia:
+   - se o delegado enviou o ecrã de resumo do grupo nesse dia, conta o total do resumo;
+   - senão, soma os formandos desse dia;
+   - se houver as duas coisas, fica o maior (o resumo inclui quem não aparece na lista).
+   Também do mais para o menos. */
 function somarTurmas(formandos){
-  var mapa={},lista=[];
-  formandos.forEach(function(f){
-    if(!mapa[f.turma]){mapa[f.turma]={turma:f.turma,passos:0,km:0,formandos:0};lista.push(mapa[f.turma])}
-    mapa[f.turma].passos+=f.passos;
-    mapa[f.turma].km+=f.km;
-    mapa[f.turma].formandos++;
+  var mapa={},lista=[],dias={};
+  function turma(nome){
+    if(!mapa[nome]){mapa[nome]={turma:nome,passos:0,km:0,formandos:0};lista.push(mapa[nome])}
+    return mapa[nome];
+  }
+
+  registos.forEach(function(r){
+    var chave=r.turma+"|"+r.dia;
+    if(!dias[chave])dias[chave]={turma:r.turma,passos:0,km:0,resumo:null};
+    dias[chave].passos+=r.passos;
+    dias[chave].km+=r.km;
+  });
+  totais.forEach(function(t){
+    var chave=t.turma+"|"+t.dia;
+    if(!dias[chave])dias[chave]={turma:t.turma,passos:0,km:0,resumo:null};
+    dias[chave].resumo=t;
+  });
+  Object.keys(dias).forEach(function(chave){
+    var d=dias[chave],t=turma(d.turma);
+    if(d.resumo&&d.resumo.passos>d.passos){t.passos+=d.resumo.passos;t.km+=d.resumo.km}
+    else{t.passos+=d.passos;t.km+=d.km}
+  });
+
+  /* número de formandos: os que aparecem nas listas ou os membros do resumo (o maior) */
+  formandos.forEach(function(f){turma(f.turma).formandos++});
+  totais.forEach(function(t){
+    var x=turma(t.turma);
+    if(t.membros>x.formandos)x.formandos=t.membros;
   });
   return lista.sort(porPassos);
 }
