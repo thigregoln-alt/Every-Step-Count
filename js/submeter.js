@@ -151,7 +151,11 @@ f.addEventListener("submit",function(e){
         items=[];render();
         btn.disabled=false;
         msg.classList.add("ok");
-        msg.textContent=T("Pontuação enviada. Obrigado!")+" "+T("Formandos lidos:")+" "+d.formandos.length;
+        var lido=[];
+        if(d.formandos&&d.formandos.length)lido.push(T("Formandos lidos:")+" "+d.formandos.length);
+        /* ecrã de resumo do grupo: mostra o total da turma que foi lido */
+        (d.totais||[]).forEach(function(t){lido.push(T("Total da turma:")+" "+t.passos+" "+T("passos"))});
+        msg.textContent=T("Pontuação enviada. Obrigado!")+" "+lido.join(" · ");
       });
     },function(err){erro("Não foi possível ler os prints. Tenta novamente.",err)});
   }).catch(function(err){erro("Não foi possível enviar. Tenta novamente.",err)});
