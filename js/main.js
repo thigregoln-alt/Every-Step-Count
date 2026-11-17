@@ -68,6 +68,8 @@ addEventListener("langchange",function(){
   countdown();
   cur=-1;tick();
 });
+/* Quando o ranking.js muda os números dos quadrados (dados que chegaram do Supabase), a bolha volta a lê-los */
+addEventListener("dadoschange",function(){cur=-1;tick()});
 
 /* Rota desenhada com o scroll (só existe em como-funciona.html) */
 var route=document.getElementById("route"),rsvg=document.getElementById("rsvg"),stops=$(".stop"),rp=null,rl=0;

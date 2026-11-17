@@ -182,7 +182,6 @@ var D={
 /* rankings */
 "Ver ranking":["View ranking","Ver ranking","Voir le classement"],
 "Ver turmas":["View classes","Ver clases","Voir les classes"],
-"Dados de teste":["Test data","Datos de prueba","Données de test"],
 "Os passos de cada turma na semana de 16 a 22 de novembro.":["Each class’s steps in the week of 16 to 22 November.","Los pasos de cada clase en la semana del 16 al 22 de noviembre.","Les pas de chaque classe pendant la semaine du 16 au 22 novembre."],
 "Passos por turma":["Steps per class","Pasos por clase","Pas par classe"],
 "turmas em competição":["classes competing","clases en competición","classes en compétition"],
@@ -197,7 +196,9 @@ var D={
 "Quem andou mais nesta turma, de 16 a 22 de novembro.":["Who walked the most in this class, from 16 to 22 November.","Quién caminó más en esta clase, del 16 al 22 de noviembre.","Qui a le plus marché dans cette classe, du 16 au 22 novembre."],
 "total da turma":["class total","total de la clase","total de la classe"],
 "Turma não encontrada.":["Class not found.","Clase no encontrada.","Classe introuvable."],
-"Ainda não há dados.":["No data yet.","Aún no hay datos.","Pas encore de données."]
+"Ainda não há dados.":["No data yet.","Aún no hay datos.","Pas encore de données."],
+"A carregar…":["Loading…","Cargando…","Chargement…"],
+"Não foi possível carregar os dados.":["Couldn’t load the data.","No se pudieron cargar los datos.","Impossible de charger les données."]
 };
 
 var lang="en"; /* idioma por defeito: inglês (a escolha do utilizador fica guardada) */

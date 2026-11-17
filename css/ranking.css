@@ -8,6 +8,9 @@
 .volta:hover::before{transform:translateX(-5px)}
 .intro{margin-top:22px;font-size:clamp(1.1rem,1.5vw,1.4rem);max-width:42ch}
 .vazio{font-weight:600;opacity:.7}
+/* "A carregar…" só aparece se os dados demorarem mais de meio segundo (para não piscar quando chegam depressa) */
+.vazio.espera{animation:aparece .4s .5s backwards}
+@keyframes aparece{from{opacity:0}}
 
 /* ---------- gráfico das turmas ---------- */
 /* --alt: altura da zona das barras · --topo: espaço reservado para o nome por cima da barra mais alta */
@@ -73,5 +76,6 @@
 @media(prefers-reduced-motion:reduce){
   .barra-cor{transition:none}
   .entra tbody tr,.entra .row{animation:none}
+  .vazio.espera{animation:none}
   .volta::before{transition:none}
 }
