@@ -185,36 +185,65 @@ async function apagarFotos(caminhos: string[]) {
 //------------------------------------------------------------
 // Chamada ao Gemini (uma foto)
 //------------------------------------------------------------
+const GOOGLE = "https://generativelanguage.googleapis.com/v1beta/";
+let modeloEmUso = ""; // fica guardado enquanto a função está ligada
+
+// Se o modelo pedido não existir, pergunta à Google que modelos há e usa o "flash" mais recente
+export function melhorFlash(nomes: string[]) {
+  const flash = nomes
+    .map((n) => n.replace(/^models\//, ""))
+    .filter((n) => /^gemini-\d+(\.\d+)?-flash$/.test(n));
+  flash.sort((a, b) => parseFloat(b.slice(7)) - parseFloat(a.slice(7)));
+  return flash[0] ?? "";
+}
+
+async function listarModelos(chave: string) {
+  const r = await fetch(GOOGLE + "models?pageSize=200", { headers: { "x-goog-api-key": chave } });
+  const corpo = await r.json().catch(() => null);
+  return (corpo?.models ?? [])
+    .filter((m: any) => (m.supportedGenerationMethods ?? []).includes("generateContent"))
+    .map((m: any) => String(m.name));
+}
+
+async function chamarModelo(chave: string, modelo: string, imagemBase64: string, tipo: string) {
+  return await fetch(GOOGLE + "models/" + modelo + ":generateContent", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { inline_data: { mime_type: tipo, data: imagemBase64 } },
+          { text: PEDIDO },
+        ],
+      }],
+      generationConfig: {
+        temperature: 0,
+        responseMimeType: "application/json",
+        responseJsonSchema: ESQUEMA,
+      },
+    }),
+  });
+}
+
 async function perguntarGemini(imagemBase64: string, tipo: string) {
   // a chave da Google do projeto (já usada pelo grupo) ou uma só para o Gemini
   const chave = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
   if (!chave) throw new Error("Falta o segredo GOOGLE_API_KEY no Supabase.");
-  const modelo = Deno.env.get("GEMINI_MODEL") || "gemini-3.8-flash";
+  if (!modeloEmUso) modeloEmUso = Deno.env.get("GEMINI_MODEL") || "gemini-3.8-flash";
 
-  const r = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/" + modelo + ":generateContent",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { inline_data: { mime_type: tipo, data: imagemBase64 } },
-            { text: PEDIDO },
-          ],
-        }],
-        generationConfig: {
-          temperature: 0,
-          responseMimeType: "application/json",
-          responseJsonSchema: ESQUEMA,
-        },
-      }),
-    },
-  );
+  let r = await chamarModelo(chave, modeloEmUso, imagemBase64, tipo);
+  if (r.status === 404) {
+    const outro = melhorFlash(await listarModelos(chave));
+    if (outro && outro !== modeloEmUso) {
+      console.log("Modelo " + modeloEmUso + " não existe; a usar " + outro);
+      modeloEmUso = outro;
+      r = await chamarModelo(chave, modeloEmUso, imagemBase64, tipo);
+    }
+  }
 
   const corpo = await r.json().catch(() => null);
   if (!r.ok) {
-    throw new Error("Gemini respondeu " + r.status + ": " + (corpo?.error?.message ?? "sem detalhe"));
+    throw new Error("Gemini (" + modeloEmUso + ") respondeu " + r.status + ": " + (corpo?.error?.message ?? "sem detalhe"));
   }
   const texto = corpo?.candidates?.[0]?.content?.parts?.map((p: any) => p.text ?? "").join("") ?? "";
   try {
