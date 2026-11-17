@@ -180,6 +180,7 @@ var D={
 "Não foi possível enviar. Tenta novamente.":["Couldn’t send. Please try again.","No se pudo enviar. Inténtalo de nuevo.","Envoi impossible. Réessaie."],
 "A verificar os prints…":["Checking the screenshots…","Comprobando las capturas…","Vérification des captures…"],
 "Formandos lidos:":["Trainees read:","Alumnos leídos:","Stagiaires lus :"],
+"Total da turma:":["Class total:","Total de la clase:","Total de la classe :"],
 "Foto":["Photo","Foto","Photo"],
 "é de outra app, não do StepUp.":["is from another app, not StepUp.","es de otra app, no de StepUp.","vient d’une autre app, pas de StepUp."],
 "não é um print do StepUp.":["is not a StepUp screenshot.","no es una captura de StepUp.","n’est pas une capture StepUp."],
