@@ -168,6 +168,9 @@ header .btn[aria-current="page"]{outline:3px solid var(--amber);outline-offset:3
 .thumbs:empty{display:none}
 .thumbs li{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:var(--bg)}
 .thumbs img{display:block;width:100%;height:100%;object-fit:cover}
+.thumbs .fich{height:100%;display:grid;place-content:center;justify-items:center;gap:8px;padding:12px;text-align:center}
+.thumbs .fich b{padding:6px 10px;border-radius:8px;background:#1D6F42;color:#fff;font:700 .8rem/1 var(--f);letter-spacing:.04em}
+.thumbs .fich span{font-size:.78rem;line-height:1.3;word-break:break-word}
 .thumbs button{position:absolute;top:6px;right:6px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(19,32,27,.78);color:#fff;font:600 1.15rem/1 var(--f);cursor:pointer;display:grid;place-items:center;transition:background .2s}
 .thumbs button:hover,.thumbs button:focus-visible{background:#B3402A}
 .af .btn:disabled{opacity:.6;cursor:progress;transform:none}

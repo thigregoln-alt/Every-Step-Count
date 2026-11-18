@@ -18,15 +18,15 @@
 
     <form id="f-up" class="af" novalidate>
       <h1>Submete a pontuação.</h1>
-      <p class="hint">Carrega o print do StepUp com os passos da tua turma.</p>
+      <p class="hint">Carrega o print do resumo do grupo do StepUp e a tabela que o StepUp gera (CSV ou Excel) com os passos de cada aluno.</p>
 
-      <p class="lbl">Prints da pontuação</p>
+      <p class="lbl">Print e tabela do StepUp</p>
       <div class="drop" id="drop" tabindex="0" role="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-        <strong>Arrasta os prints para aqui</strong>
+        <strong>Arrasta os ficheiros para aqui</strong>
         <span>ou clica para escolher · também podes colar com Ctrl+V</span>
-        <small>PNG, JPG ou WebP · até 8 MB cada · máximo 2</small>
-        <input type="file" id="file" accept="image/png,image/jpeg,image/webp" multiple>
+        <small>Print: PNG, JPG ou WebP · Tabela: CSV ou XLSX · até 8 MB cada · 2 ficheiros</small>
+        <input type="file" id="file" accept="image/png,image/jpeg,image/webp,.csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
       </div>
       <ul class="thumbs" id="thumbs"></ul>
 

@@ -1,5 +1,6 @@
 /* Submeter pontuação (só existe em submeter.html):
-   caixa de upload de prints (arrastar, clicar ou colar) + envio para o Supabase. */
+   caixa de upload (arrastar, clicar ou colar) + envio para o Supabase.
+   O delegado envia 2 ficheiros: o print do resumo do grupo do StepUp e a tabela que o StepUp gera (CSV/Excel). */
 (function(){
 var T=function(s){return window.t?window.t(s):s};
 var f=document.getElementById("f-up");
@@ -7,6 +8,17 @@ if(!f)return;
 
 var sb=window.ATEC_SB||null;
 var MAX=2,SIZE=8*1024*1024,EXT={"image/png":"png","image/jpeg":"jpg","image/webp":"webp"};
+var XLSX_TIPO="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+/* Que ficheiro é: imagem pelo tipo; tabela pela extensão
+   (no Windows um .csv às vezes vem como "application/vnd.ms-excel" ou sem tipo) */
+function tipoDe(file){
+  if(EXT[file.type])return {ext:EXT[file.type],tipo:file.type,imagem:true};
+  var nome=(file.name||"").toLowerCase();
+  if(/\.csv$/.test(nome))return {ext:"csv",tipo:"text/csv",imagem:false};
+  if(/\.xlsx$/.test(nome))return {ext:"xlsx",tipo:XLSX_TIPO,imagem:false};
+  return null;
+}
 var drop=document.getElementById("drop"),input=document.getElementById("file"),thumbs=document.getElementById("thumbs");
 var msg=f.querySelector(".msg"),btn=f.querySelector("button[type=submit]"),items=[],user=null;
 
@@ -56,20 +68,34 @@ function say(s,ok){msg.classList.toggle("ok",!!ok);msg.textContent=s?T(s):""}
 function render(){
   thumbs.innerHTML="";
   items.forEach(function(it,i){
-    var li=document.createElement("li"),img=document.createElement("img"),x=document.createElement("button");
-    img.src=it.url;img.alt="";
+    var li=document.createElement("li"),x=document.createElement("button");
+    if(it.url){
+      var img=document.createElement("img");
+      img.src=it.url;img.alt="";
+      li.appendChild(img);
+    }else{
+      /* tabela (CSV/Excel): não há imagem, mostra o nome do ficheiro */
+      var fi=document.createElement("div");
+      fi.className="fich";
+      fi.innerHTML="<b>"+it.ext.toUpperCase()+"</b>";
+      var nm=document.createElement("span");
+      nm.textContent=it.file.name;
+      fi.appendChild(nm);
+      li.appendChild(fi);
+    }
     x.type="button";x.textContent="×";x.setAttribute("aria-label",T("Remover"));
-    x.addEventListener("click",function(){URL.revokeObjectURL(it.url);items.splice(i,1);render();say("")});
-    li.appendChild(img);li.appendChild(x);thumbs.appendChild(li);
+    x.addEventListener("click",function(){if(it.url)URL.revokeObjectURL(it.url);items.splice(i,1);render();say("")});
+    li.appendChild(x);thumbs.appendChild(li);
   });
 }
 
 function add(list){
   var err="";
   [].slice.call(list).forEach(function(file){
-    if(!EXT[file.type]||file.size>SIZE){err="Ficheiro inválido. Usa PNG, JPG ou WebP até 8 MB.";return}
-    if(items.length>=MAX){err="Podes enviar no máximo 2 prints.";return}
-    items.push({file:file,url:URL.createObjectURL(file)});
+    var t=tipoDe(file);
+    if(!t||file.size>SIZE){err="Ficheiro inválido. Usa PNG, JPG ou WebP para o print e CSV ou XLSX para a tabela, até 8 MB.";return}
+    if(items.length>=MAX){err="Podes enviar no máximo 2 ficheiros: o print e a tabela.";return}
+    items.push({file:file,ext:t.ext,tipo:t.tipo,url:t.imagem?URL.createObjectURL(file):""});
   });
   render();say(err);
 }
@@ -86,8 +112,8 @@ document.addEventListener("paste",function(e){
   add(e.clipboardData.files);
 });
 
-/* Ler os prints com o Gemini (Edge Function "ler-print" no Supabase).
-   A função vê se cada foto é um print do StepUp; se forem todas, grava na tabela registos. */
+/* Ler os ficheiros com o Gemini (Edge Function "ler-print" no Supabase).
+   A função vê se é o print e a tabela do StepUp, confere se os números batem certo e só então grava. */
 function lerPrints(paths){
   return sb.functions.invoke("ler-print",{body:{caminhos:paths}}).then(function(r){
     if(!r.error)return r.data;
@@ -98,16 +124,32 @@ function lerPrints(paths){
   });
 }
 
-/* O que dizer quando uma foto não serve (o tipo vem do Gemini) */
+/* O que dizer quando um ficheiro não serve (o tipo vem do Gemini) */
 var MOTIVO={
   outra_app:"é de outra app, não do StepUp.",
-  outra_coisa:"não é um print do StepUp.",
-  ilegivel:"não dá para ler. Tira um print mais nítido."
+  outra_coisa:"não é o print nem a tabela do StepUp.",
+  ilegivel:"não dá para ler. Envia um ficheiro mais nítido."
 };
 function fotosInvalidas(lista){
   return lista.map(function(x){
-    return T("Foto")+" "+x.foto+": "+T(MOTIVO[x.tipo]||MOTIVO.outra_coisa);
+    return T("Ficheiro")+" "+x.foto+": "+T(MOTIVO[x.tipo]||MOTIVO.outra_coisa);
   }).join(" ");
+}
+
+/* O que dizer quando a tabela não bate certo com o print do resumo (vem da função) */
+var NAO_BATE={
+  falta_resumo:"Falta o print do resumo do grupo do StepUp. A tabela só é aceite junto com ele.",
+  falta_tabela:"Falta a tabela do StepUp (CSV ou Excel) com os passos de cada aluno.",
+  passos:"Os passos da tabela não batem certo com o StepUp. A tabela pode ter sido alterada.",
+  membros:"A tabela tem mais alunos do que o grupo do StepUp. A tabela pode ter sido alterada.",
+  km:"Os quilómetros da tabela não batem certo com o StepUp. A tabela pode ter sido alterada.",
+  datas:"As datas da tabela não são as mesmas do print do StepUp.",
+  turma:"A tabela é de outro grupo do StepUp."
+};
+function naoBate(d){
+  var texto=T(NAO_BATE[d.motivo]||NAO_BATE.falta_resumo);
+  if(d.tabela!=null&&d.stepup!=null)texto+=" ("+T("Tabela:")+" "+d.tabela+" · StepUp: "+d.stepup+")";
+  return texto;
 }
 
 function erro(texto,err){
@@ -120,15 +162,15 @@ function erro(texto,err){
 /* Enviar: prints para o Storage -> o Gemini verifica e lê -> só se forem válidos fica a submissão */
 f.addEventListener("submit",function(e){
   e.preventDefault();
-  if(!items.length){say("Escolhe pelo menos um print.");return}
+  if(items.length<2){say("Envia os 2 ficheiros: o print do resumo do StepUp e a tabela do StepUp (CSV ou Excel).");return}
   if(!sb){say("Não foi possível ligar ao servidor.");return}
 
   btn.disabled=true;say("A enviar…");
   var paths=[],chain=Promise.resolve();
   items.forEach(function(it,i){
     chain=chain.then(function(){
-      var path=(user?user.id:"anon")+"/"+Date.now()+"-"+i+"."+EXT[it.file.type];
-      return sb.storage.from("prints").upload(path,it.file,{contentType:it.file.type}).then(function(r){
+      var path=(user?user.id:"anon")+"/"+Date.now()+"-"+i+"."+it.ext;
+      return sb.storage.from("prints").upload(path,it.file,{contentType:it.tipo}).then(function(r){
         if(r.error)throw r.error;
         paths.push(path);
       });
@@ -136,18 +178,18 @@ f.addEventListener("submit",function(e){
   });
 
   chain.then(function(){
-    say("A verificar os prints…");
+    say("A verificar os ficheiros…");
     return lerPrints(paths).then(function(d){
-      /* alguma foto não é do StepUp: não grava nada, as fotos ficam na caixa para trocar */
+      /* algum ficheiro não serve ou a tabela não bate certo: não grava nada, os ficheiros ficam na caixa para trocar */
       if(!d||d.valido!==true){
         btn.disabled=false;
         msg.classList.remove("ok");
-        msg.textContent=fotosInvalidas((d&&d.invalidas)||[]);
+        msg.textContent=d&&d.motivo?naoBate(d):fotosInvalidas((d&&d.invalidas)||[]);
         return;
       }
       return sb.from("submissoes").insert({dia:hoje(),prints:paths}).then(function(r){
         if(r.error)throw r.error;
-        items.forEach(function(it){URL.revokeObjectURL(it.url)});
+        items.forEach(function(it){if(it.url)URL.revokeObjectURL(it.url)});
         items=[];render();
         btn.disabled=false;
         msg.classList.add("ok");
@@ -157,7 +199,7 @@ f.addEventListener("submit",function(e){
         (d.totais||[]).forEach(function(t){lido.push(T("Total da turma:")+" "+t.passos+" "+T("passos"))});
         msg.textContent=T("Pontuação enviada. Obrigado!")+" "+lido.join(" · ");
       });
-    },function(err){erro("Não foi possível ler os prints. Tenta novamente.",err)});
+    },function(err){erro("Não foi possível ler os ficheiros. Tenta novamente.",err)});
   }).catch(function(err){erro("Não foi possível enviar. Tenta novamente.",err)});
 });
 

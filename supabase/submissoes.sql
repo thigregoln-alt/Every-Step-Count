@@ -9,9 +9,13 @@
 alter table public.submissoes
   add column if not exists prints text[] not null default '{}';
 
--- 2. Pasta privada "prints" (só PNG/JPG/WebP, até 8 MB cada)
+-- 2. Pasta privada "prints" (até 8 MB cada):
+--    o print do resumo do StepUp (PNG/JPG/WebP) e a tabela que o StepUp gera (CSV ou XLSX)
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('prints', 'prints', false, 8388608, array['image/png','image/jpeg','image/webp'])
+values ('prints', 'prints', false, 8388608, array[
+  'image/png','image/jpeg','image/webp',
+  'text/csv','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+])
 on conflict (id) do update
   set public = false,
       file_size_limit = excluded.file_size_limit,
