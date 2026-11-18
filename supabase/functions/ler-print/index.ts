@@ -76,7 +76,9 @@ const ESQUEMA = {
     data: {
       type: "string",
       description:
-        "Data a que os passos dizem respeito, no formato AAAA-MM-DD, se aparecer no print. " +
+        "Data a que os passos dizem respeito, no formato AAAA-MM-DD, se aparecer no print ou na tabela. " +
+        "Na tabela do StepUp a data pode vir em formato americano MM/DD/AAAA (ex.: 11/17/2026 = 2026-11-17), " +
+        "às vezes como título de uma coluna com os passos desse dia. " +
         "Se aparecer um intervalo de datas, é a data do FIM do intervalo. Vazio se não aparecer.",
     },
     data_inicio: {
@@ -104,9 +106,9 @@ const ESQUEMA = {
       items: {
         type: "object",
         properties: {
-          nome: { type: "string", description: "Nome da pessoa exatamente como aparece no print" },
-          passos: { type: "integer", description: "Número de passos, sem pontos nem espaços" },
-          km: { type: "number", description: "Distância em quilómetros. Se estiver em metros ou milhas, converte para km (milhas x 1,609). 0 se não aparecer." },
+          nome: { type: "string", description: "Nome da pessoa exatamente como aparece (na tabela: primeiro nome + último nome)" },
+          passos: { type: "integer", description: "Número de passos TOTAL da pessoa (na tabela do StepUp é a coluna 'Total Steps', não a média diária), sem pontos nem espaços" },
+          km: { type: "number", description: "Distância TOTAL em quilómetros (na tabela do StepUp é a coluna 'Total Distance (km)'). Se só houver metros ou milhas, converte para km (milhas x 1,609). 0 se não aparecer." },
         },
         required: ["nome", "passos"],
       },
@@ -521,9 +523,11 @@ Deno.serve(async (req) => {
     }
     const { resumo, tabela } = conferido;
 
-    // Turma: a da conta do delegado; se a conta não tiver, a que aparece no print do resumo
+    // Turma: o "Nome do grupo" que aparece no print do StepUp.
+    // Assim fica certo seja quem for que envie (a professora envia as turmas todas com a conta dela).
+    // Só se o print não mostrar o nome é que usa a turma da conta.
     const turmaConta = String(user.user_metadata?.["class"] ?? "").trim();
-    const turma = turmaConta || resumo.turma || tabela.turma || "";
+    const turma = resumo.turma || tabela.turma || turmaConta || "";
     if (turma === "") {
       await apagarFotos(caminhos);
       return resposta({ erro: "Não sei de que turma é este print. Põe a turma na tua conta." }, 400);
